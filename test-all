@@ -1,0 +1,25 @@
+list="
+    test-auth
+    test-user
+"
+pass=True
+for i in ${list} 
+do
+    echo "Testing \"${i}\""
+    tmp=$(mktemp -t "testSuite")
+    cabal run ${i} -j --verbose=0 2> "${tmp}"
+    if [ $? != 0 ] 
+    then
+        pass=False
+        cat "${tmp}"
+        echo
+        echo "\"${i}\" Failed"
+        break
+    fi
+    rm "${tmp}"
+done
+
+if [ ${pass} == True ]
+then
+    echo "All Pass"
+fi

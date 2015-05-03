@@ -1,0 +1,79 @@
+<h4>test</h4>
+
+<div class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content register-content">
+            <div class="modal-header">
+                <h4> 注册账号 </h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group row">
+                        <div class="col-sm-7 col-sm-offset-1">
+                            {{#input-group-highlight}}
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-user"></i>
+                                </span>
+                                {{input class="form-control" placeholder="用户名"}}
+                            </div>
+                            {{/input-group-highlight}}
+                        </div>
+                        <div class="col-sm-4">
+                            其他人会看到这个名字
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-7 col-sm-offset-1">
+                            {{#input-group-highlight}}
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-envelope"></i>
+                                </span>
+                                {{input class="form-control" placeholder="邮箱"}}
+                            </div>
+                            {{/input-group-highlight}}
+                        </div>
+                        <div class="col-sm-4">
+                            注册邮箱不会被其他人看到
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-7 col-sm-offset-1">
+                            {{#input-group-highlight}}
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-lock"></i>
+                                </span>
+                                {{input class="form-control" placeholder="密码"}}
+                            </div>
+                            {{/input-group-highlight}}
+                        </div>
+                        <div class="col-sm-4">
+                            长度至少为6个字符
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-7 col-sm-offset-1">
+                            {{#input-group-highlight}}
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-lock"></i>
+                                </span>
+                                {{input class="form-control" placeholder="再输入一次密码"}}
+                            </div>
+                            {{/input-group-highlight}}
+                        </div>
+                        <div class="col-sm-4">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10 col-sm-offset-1">
+                            <button class="btn btn-block btn-success">确认注册</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
