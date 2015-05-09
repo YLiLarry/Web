@@ -1,0 +1,42 @@
+<h4>
+    {{model.title}}
+    <small> {{#link-to 'problem' model.prev}} 上一题 {{/link-to}} </small>
+    <small> {{#link-to 'problem' model.next}} 下一题 {{/link-to}} </small>
+</h4>
+<hr>
+<article>
+    {{model.content}}
+</article>
+<hr>
+<div class="alert alert-warning">
+    <strong> 答案正确 </strong>
+    <p> 恭喜你答对了这道题 </p>
+</div>
+<hr>
+<h5> 小队 </h5>
+<div> 您可以独自解题，或者 <a> 邀请好友组队 </a> </div>
+<hr>
+<div class="upload">
+    <div class="form">
+        <div class="form-group">
+            <label for="file-upload" class="btn btn-primary"> 上传代码 </label>
+            {{#if filename}}
+            <span>
+                <i class="glyphicon glyphicon-console"></i>
+                {{filename}}
+            </span>
+            {{/if}}
+            <button class="btn btn-danger pull-right" {{action 'uploadFile'}}> 运行 </button>
+        </div>
+        <div class="form-group">
+            <textarea id="file-content" rows="8" class="form-control" placeholder="把代码粘贴到这里运行"></textarea>
+        </div>
+        <input id="file-upload" name="hsfile" type="file" class="hidden">
+    </div>
+</div>
+{{#if response}}
+<div class="result {{if answerCorrent 'correct' 'wrong'}}">
+    <h5> 运行结果 </h5>
+    <pre> {{response}} </pre>
+</div>
+{{/if}}

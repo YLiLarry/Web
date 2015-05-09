@@ -1,0 +1,12 @@
+question="${1}"
+uploadFile=${2}
+
+tmp=${question}/${question}.hs
+rm ${tmp}
+cat "safehead.hs" >> ${tmp}
+echo "----------------------" >> ${tmp}
+cat ${uploadFile} >> ${tmp}
+echo "----------------------" >> ${tmp}
+cat ${question}.hs >> ${tmp}
+
+timeout 2s runhaskell ${tmp}

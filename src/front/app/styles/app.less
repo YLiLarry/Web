@@ -1,7 +1,7 @@
 
 @import "login.less";
 @import "register.less";
-@import "part-register.less";
+@import "problems.less";
 @import "variables.less";
 
 .input-group {
@@ -26,4 +26,24 @@
     height: 100vh;
     width: 100vw;
     position: absolute;
+}
+
+.transparent {
+    visibility: hidden;
+}
+
+#topbar ~ * {
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+#footer {
+    text-align: center;
+    padding: 1%;
+    font-size: 0.9em;
+    color: @gray;
+    border-top: 1px solid @gray-lighter;
 }

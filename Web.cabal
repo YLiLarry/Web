@@ -66,6 +66,8 @@ executable main
                      , HDBC-sqlite3
                      , convertible
                      , mtl
+                     , process >= 1.2.3.0
+                     , directory
                      
   -- Directories containing source files.
   hs-source-dirs:      src/back
@@ -87,6 +89,8 @@ executable test-auth
                      , convertible  
                      , QuickCheck >= 2.8.1
                      , mtl
+                     , process >= 1.2.3.0
+                     , directory
                      
 executable test-user
   hs-source-dirs:      test, src/back
@@ -100,4 +104,6 @@ executable test-user
                      , convertible
                      , QuickCheck >= 2.8.1
                      , mtl
+                     , process >= 1.2.3.0
+                     , directory
   

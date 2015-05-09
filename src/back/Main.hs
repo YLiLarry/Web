@@ -3,18 +3,20 @@ module Main where
 import Happstack.Lite
 import Text.Blaze.Html (preEscapedToHtml)
 import Data.Text
-import Happstack.Server (askRq, ServerMonad(..), rqUri)
+import Happstack.Server (askRq, ServerMonad(..), rqUri, dirs)
 import Happstack.Server.FileServe.BuildingBlocks (guessContentType)
 import Data.Maybe (fromMaybe)
 import Control.Monad
 import DB
 import Login
+import RunHaskell
 
 main :: IO ()
 main = do
     conn <- connectDB
     serve Nothing $ msum [
-              dir "api" $ dir "login" $ loginResponse conn
+              dirs "api/v1/login" $ loginResponse conn
+            , dirs "api/v1/runhaskell" $ runHaskell
             , loadAnyPage
             , nullDir >> homePage
             , homePage

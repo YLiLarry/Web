@@ -31,7 +31,7 @@ export default Ember.Component.extend({
             // post
             $.ajax({
                 method: "POST",
-                url: "/api/login",
+                url: "/api/v1/login",
                 data: {
                     email:    this.get('email'), 
                     password: this.get('password')

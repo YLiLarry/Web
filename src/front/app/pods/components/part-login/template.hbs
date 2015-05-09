@@ -1,24 +1,7 @@
-<div class="modal" id="component-login">
-    <div class="modal-dialog login-wrapper">
-        <div class="modal-content login-body">
-            <div class="left-part site-intro">
-                <h2 class="site-title"> 火柴盒 </h2>
-                <p class="site-question"> 
-                    {{#if loadedQuestion}}
-                        请写出一个函数 comb(s, n), 返回 s 集合里所有长度为 n 的子集
-                    {{else}}
-                        一个与 Project Euler 相似的中文网站
-                    {{/if}}
-                </p>
-                <div class="site-btns">
-                    <button class="btn btn-default" {{action 'loadRandomQuestion'}}> 划一根火柴 </button>
-                    {{#if loadedQuestion}} 
-                        {{#link-to 'register' class="btn btn-default" }} 新用户注册 {{/link-to}}
-                        <!-- <button class="btn btn-default" {{link-to 'register'}}> 新用户注册 </button> -->
-                    {{/if}}
-                </div>
-            </div>            
-            <div class="right-part form login-form">
+<div class="modal" id="part-login">
+    <div class="modal-dialog modal-sm login-wrapper">
+        <div class="modal-content login-body">      
+            <div class="form login-form">
                 <h4 class="login-title"> 登录 </h4>
                 <div class="form-group">
                     {{#input-group-highlight}}
@@ -47,7 +30,7 @@
                 </div>
                 {{/if}}
                 <div class="form-group">
-                    <button class="btn btn-link">忘记密码</button>
+                    <button class="btn btn-link" data-toggle='modal' data-target='#part-register'>新用户注册</button>
                     <button class="btn btn-primary pull-right" {{action 'login'}}>
                         登录
                     </button>
