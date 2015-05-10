@@ -19,6 +19,7 @@ app.import('bower_components/bootstrap/dist/css/bootstrap-theme.css');
 
 app.import('bower_components/freewall/freewall.js');
 app.import('bower_components/jscheck/jscheck.js');
+app.import('bower_components/js-cookie/src/js.cookie.js');
 
 // Use `app.import` to add additional libraries to the generated
 // output files.

@@ -13,6 +13,15 @@ App = Ember.Application.extend({
     Resolver: Resolver
 });
 
+Ember.View.reopen({
+    didInsertElement: function() {
+        var en = Cookies.get('session');
+        if (en) {
+            this.set('session', JSON.parse(en));
+        }
+    }
+}); 
+
 loadInitializers(App, config.modulePrefix);
 
 export default App;

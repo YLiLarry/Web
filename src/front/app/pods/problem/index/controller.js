@@ -31,7 +31,7 @@ export default Ember.Controller.extend({
                 processData: false,
                 data: form,
                 success: function(response) {
-                    controller.set('response', response.responseText);
+                    controller.set('response', response);
                     controller.set('answerCorrent', true);
                 }.bind(this),
                 error: function(response) {

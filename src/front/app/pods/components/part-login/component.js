@@ -1,6 +1,13 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
+    // didInsertElement: function() {
+    //     Ember.run.scheduleOnce('afterRender', this, function() {
+    //         $('body').on('login', function() {
+    //            console.log('logged!'); 
+    //         });
+    //     });
+    // },
     actions: {
         loadRandomQuestion: function() {
             this.set('loadedQuestion', true);
@@ -36,8 +43,11 @@ export default Ember.Component.extend({
                     email:    this.get('email'), 
                     password: this.get('password')
                 },
-                success: function() {
-                    this.sendAction();
+                success: function(session) {
+                    var sessionObj = JSON.parse(session);
+                    Cookies.set('session', session, {path: '/'});
+                    $('#part-login').modal('hide');
+                    $('body').trigger('login', sessionObj);
                 }.bind(this),
                 error: function() {
                     this.set('message', "你的用户名或密码无效");

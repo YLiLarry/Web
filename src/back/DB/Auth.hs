@@ -5,7 +5,6 @@ import Data.Unique
 
 type UID = Integer
 type ID = Integer
-type Username = String
 type Token = String
 
 getUserIDByToken :: IConnection c => Token -> c -> IO (Maybe UID)

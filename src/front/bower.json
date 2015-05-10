@@ -13,6 +13,7 @@
     "loader.js": "ember-cli/loader.js#3.2.0",
     "qunit": "~1.17.1",
     "bootstrap": "~3.3.4",
-    "jscheck": "https://github.com/douglascrockford/JSCheck.git"
+    "jscheck": "https://github.com/douglascrockford/JSCheck.git",
+    "js-cookie": "https://github.com/js-cookie/js-cookie.git#~1.5.1"
   }
 }
