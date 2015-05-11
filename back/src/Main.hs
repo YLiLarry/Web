@@ -3,24 +3,31 @@ module Main where
 import Happstack.Lite
 import Text.Blaze.Html (preEscapedToHtml)
 import Data.Text
-import Happstack.Server (askRq, ServerMonad(..), rqUri, dirs)
+import Happstack.Server (askRq, ServerMonad(..), rqUri, dirs, badRequest)
 import Happstack.Server.FileServe.BuildingBlocks (guessContentType)
 import Data.Maybe (fromMaybe)
 import Control.Monad
 import DB
 import Login
 import RunHaskell
+import Problem
+import Helper
 
 main :: IO ()
 main = do
     conn <- connectDB
     serve Nothing $ msum [
-              dirs "api/v1/login" $ loginResponse conn
-            , dirs "api/v1/runhaskell" $ runHaskell
-            , loadAnyPage
-            , nullDir >> homePage
-            , homePage
-            , page404  
+              dirs "api/v1" $ msum [
+                      dir "login" $ loginResponse conn
+                    , dir "runhaskell" $ runHaskell
+                    , dir "problems" $ problemCollection conn
+                    , dir "problems" $ problemElement 
+                    , badRequest $ toResponse "Your request is illegal."
+                ]
+            , msum [
+                      loadAnyPage
+                    , homePage
+                ]
         ]
 
 homePage :: ServerPart Response
@@ -37,7 +44,7 @@ fullpath :: ServerMonad m => m String
 fullpath = liftM rqUri askRq
 
 frontend :: FilePath -> FilePath
-frontend = ("src/front/dist/" ++)
+frontend = ("../front/dist/" ++)
 
 load :: String -> ServerPart Response
 load str = serveFile (asContentType (fromMaybe "text/html" $ guessContentType mimeTypes uri)) uri

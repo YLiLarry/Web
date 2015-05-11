@@ -1,4 +1,3 @@
-import DB
 import TestTools
 
 main :: IO ()

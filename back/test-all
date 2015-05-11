@@ -1,6 +1,7 @@
 list="
     test-auth
     test-user
+    test-problem
 "
 pass=True
 for i in ${list} 
