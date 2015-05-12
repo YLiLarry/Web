@@ -15,5 +15,19 @@ problemCollection conn = do
 problemElement :: ServerPart Response
 problemElement = do
     ok $ toResponse $ JSON.encode "test2"
+
+userSolutions :: IConnection c => c -> ServerPart Response
+userSolutions conn = do
+    uid <- look "uid"
+    current <- lookRead "current"
+    perPage <- lookRead "perpage"
+    result <- lift $ getuserSolutions uid (Pagination current perPage) conn
+    ok $ toResponse $ JSON.encode result
     
+
+userSolution :: IConnection c => c -> ServerPart Response
+userSolution conn = do
+    userID <- lookRead "uid"
+    result <- lift $ getuserSolution uid conn
+    ok $ toResponse $ JSON.encode result
     

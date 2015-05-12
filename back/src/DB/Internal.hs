@@ -13,6 +13,7 @@ module DB.Internal (
     , column -- to be replaced by a general new function
     , Pagination(..)
     , getAll
+    , new
 ) where
 
 import Database.HDBC
@@ -66,3 +67,12 @@ getAll tb cols pag conn = do
     stmt <- prepare conn $ "SELECT " ++ intercalate "," cols ++ " FROM " ++ tb ++ " LIMIT " ++ offset ++ ", " ++ top
     execute stmt []
     (fmap.fmap.fmap) (\(colName, sqlVal) -> (colName, fromSql sqlVal)) $ fetchAllRowsAL stmt
+
+
+new :: IConnection c => TableName -> [ColumnName] -> [SqlValue] -> c -> IO ID 
+new tb cols vals conn = do
+    stmt <- prepare conn $ "INSERT INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (\_ -> "?") cols) ++ ")"
+    execute stmt vals
+    commit conn
+    fmap (fromSql.head.head) $ quickQuery conn "SELECT last_insert_rowid();" []
+    

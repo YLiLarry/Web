@@ -31,4 +31,3 @@ getUserPassword :: IConnection c => UserID -> c -> IOMaybe Password
 getUserPassword id = getByUserID id "password"
     
 
-    
