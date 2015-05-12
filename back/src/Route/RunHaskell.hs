@@ -1,4 +1,4 @@
-module RunHaskell where
+module Route.RunHaskell where
 
 import Happstack.Server
 import System.Process

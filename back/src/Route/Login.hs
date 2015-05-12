@@ -1,4 +1,4 @@
-module Login where
+module Route.Login where
     
 import Happstack.Server
 import DB

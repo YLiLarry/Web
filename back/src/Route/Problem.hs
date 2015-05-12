@@ -1,4 +1,4 @@
-module Problem where
+module Route.Problem where
 
 import Happstack.Server
 import Text.JSON as JSON

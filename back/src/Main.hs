@@ -8,9 +8,7 @@ import Happstack.Server.FileServe.BuildingBlocks (guessContentType)
 import Data.Maybe (fromMaybe)
 import Control.Monad
 import DB
-import Login
-import RunHaskell
-import Problem
+import Route
 import Helper
 
 main :: IO ()
