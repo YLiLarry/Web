@@ -1,7 +1,7 @@
 module Route.Problem where
 
 import Happstack.Server
-import Text.JSON as JSON
+import Text.JSON as JSON (encode)
 import DB
 import Control.Monad.Trans (lift)
 
@@ -18,16 +18,17 @@ problemElement = do
 
 userSolutions :: IConnection c => c -> ServerPart Response
 userSolutions conn = do
-    uid <- look "uid"
+    uid <- lookRead "uid"
     current <- lookRead "current"
     perPage <- lookRead "perpage"
-    result <- lift $ getuserSolutions uid (Pagination current perPage) conn
+    result <- lift $ getUserSolutions uid (Pagination current perPage) conn
     ok $ toResponse $ JSON.encode result
     
 
 userSolution :: IConnection c => c -> ServerPart Response
 userSolution conn = do
-    userID <- lookRead "uid"
-    result <- lift $ getuserSolution uid conn
+    uid <- lookRead "uid"
+    pid <- lookRead "pid"
+    result <- lift $ getUserSolution uid pid conn
     ok $ toResponse $ JSON.encode result
     

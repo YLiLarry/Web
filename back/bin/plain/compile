@@ -1,0 +1,19 @@
+file="${1}"
+qPath="${2}"
+outPath="${3}"
+
+catOut="${qPath}/cat/out.txt"
+
+allOuts=$(ls "${qPath}" | sort -g | egrep ".out$")
+
+for o in ${allOuts}; do
+    diff -q -a "${qPath}/${o}" "${outPath}/${o}" > /dev/null
+    result="${?}"
+    if [ ${result} != "0" ]; then
+        echo "Test ${o} failed."
+        exit ${o%.out} # exit code is the test case failed
+    else
+        echo "Test ${o} passed."
+    fi
+done
+

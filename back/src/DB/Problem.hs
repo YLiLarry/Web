@@ -5,7 +5,7 @@ module DB.Problem where
 import DB.Internal
 --import Data.Text
 import Control.Monad (join)
-import Text.JSON as JSON (encode)
+import Text.JSON as JSON (encode, JSON)
 
 data Problem = Problem {
       problemID :: Maybe Integer
@@ -14,6 +14,8 @@ data Problem = Problem {
     , problemAnswerCount :: Integer
     , problemSolvedByUser :: Bool
 }
+
+instance JSON Problem
 
 defaultProblem :: Problem
 defaultProblem = Problem {
