@@ -5,7 +5,7 @@ module DB.Problem where
 import DB.Internal
 --import Data.Text
 import Control.Monad (join)
-import Text.JSON as JSON (encode, JSON)
+import Text.JSON as JSON (encode, JSON, toJSObject)
 
 data Problem = Problem {
       problemID :: Maybe Integer
@@ -15,8 +15,6 @@ data Problem = Problem {
     , problemSolvedByUser :: Bool
 }
 
-instance JSON Problem
-
 defaultProblem :: Problem
 defaultProblem = Problem {
       problemID = Nothing
@@ -25,6 +23,8 @@ defaultProblem = Problem {
     , problemAnswerCount = 0
     , problemSolvedByUser = False
 }
+
+instance JSON Problem
 
 newProblem :: IConnection c => Problem -> c -> IOMaybe ID
 newProblem problem conn = do
@@ -78,6 +78,5 @@ userSolvedProblem :: IConnection c => ID -> ID -> c -> IO Bool
 userSolvedProblem uid pid conn = return True
 
 getAllProblems :: IConnection c => Pagination -> c -> IO [[(ColumnName,String)]]
-getAllProblems pag conn = getAll "Problem" ["title","content","answerCount"] pag conn 
-
+getAllProblems pag conn = getAll "Problem" ["id","title","content","answerCount"] pag conn 
 

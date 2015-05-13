@@ -8,36 +8,38 @@ import Control.Monad.Trans (lift)
 import Control.Monad (forM_)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import System.Exit (ExitCode(..))
-import Data.Text.Lazy as Text (splitOn, pack)
+import Data.Text.Lazy as Text (splitOn, pack, append)
 import Data.Text.Lazy.IO as TextIO (readFile, writeFile)
---import Data.Text.Lazy.IO as Text
+import DB (newUserSolution, IConnection)
 
 import Helper
 
-runHaskell :: ServerPart Response
-runHaskell = do
+runHaskell :: IConnection c => c -> ServerPart Response
+runHaskell conn = do
     (filepath,filename,_) <- lookFile "hsfile"
-    question <- look "question"
+    pid <- look "problem"
     uid <- look "uid"
     language <- look "language"
     wd <- lift getCurrentDirectory
     let binPath = wd ++ "/bin/" ++ language
-    let questionPath = wd ++ "/bin/plain/q" ++ question
-    let compilePath = wd ++ "/tmp/q" ++ question ++ "/user" ++ uid
+    let problemPath = wd ++ "/bin/plain/q" ++ pid
+    let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ uid
     lift $ createDirectoryIfMissing True compilePath
     lift $ splitUserAnswerTo compilePath filepath
     (exitCode, out, error) <- lift $ readCreateProcessWithExitCode 
         (proc (binPath ++ "/compile") 
-              [filepath,questionPath,compilePath]) { cwd = Just binPath } 
+              [filepath,problemPath,compilePath]) { cwd = Just binPath } 
         ""
     let result = JSON.encode [("stdout",out), ("stderr", error)]
     if (exitCode /= ExitSuccess) 
-        then badRequest $ toResponse result
-        else ok $ toResponse result
+    then badRequest $ toResponse result
+    else do
+        lift $ newUserSolution (read uid) (read pid) conn
+        ok $ toResponse result
 
 splitUserAnswerTo :: FilePath -> FilePath -> IO ()
 splitUserAnswerTo destination filepath = do
     content <- TextIO.readFile filepath
-    forM_ (zip [1..] $ tail $ Text.splitOn (pack "OUTPUT") content) (\(num,content) -> do
-        TextIO.writeFile (destination ++ "/" ++ show num ++ ".out") content)
+    forM_ (zip [1..] $ tail $ Text.splitOn (pack "OUTPUT") content) (\(num, content) -> do
+        TextIO.writeFile (destination ++ "/" ++ show num ++ ".out") $ (pack "OUTPUT") `append` content)
     

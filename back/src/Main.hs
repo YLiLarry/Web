@@ -17,7 +17,7 @@ main = do
     serve Nothing $ msum [
               dirs "api/v1" $ msum [
                       dir "login" $ loginResponse conn
-                    , dir "runhaskell" $ runHaskell
+                    , dir "runhaskell" $ runHaskell conn
                     , dir "problems" $ problemCollection conn
                     , dir "problems" $ problemElement 
                     , badRequest $ toResponse "Your request is illegal."
