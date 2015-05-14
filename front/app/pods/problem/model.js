@@ -6,5 +6,7 @@ export default DS.Model.extend({
     answerCount: DS.attr("number"),
     isSolvedByUser: DS.attr("boolean"),
     friendSolutionCount: DS.attr("number"),
+    next: DS.attr("number"),
+    prev: DS.attr("number"),
     thumbnail: "http://www.intechopen.com/source/html/43273/media/image47.png",
 });

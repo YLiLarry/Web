@@ -55,6 +55,16 @@ getProblemByID id conn = do
                 , problemAnswerCount = answerCount
             }
             
+getProblem :: IConnection c => ID -> c -> IO (Maybe [(ColumnName,String)])
+getProblem pid conn = do
+    prev <- prevID pid "Problem" conn
+    next <- nextID pid "Problem" conn
+    prb <- getOne pid "Problem" ["id","title","content","answerCount"] conn
+    return $ maybe Nothing
+        (Just . ([("next", maybe "" show next), ("prev", maybe "" show prev)] ++)) 
+        prb
+    
+            
 getUserSolutions :: IConnection c => ID -> Pagination -> c -> IO [[(ColumnName,String)]]
 getUserSolutions uid pag conn = join $ fmap sequence $ (fmap.fmap) lambda $ getAllProblems pag conn
     where

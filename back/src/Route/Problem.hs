@@ -4,7 +4,7 @@ import Happstack.Server
 import Text.JSON as JSON (encode)
 import DB
 import Control.Monad.Trans (lift)
-import Route.Internal (toJObjs)
+import Route.Internal (toJObjs, toJObj)
 
 problemCollection :: IConnection c => c -> ServerPart Response
 problemCollection conn = do
@@ -13,9 +13,10 @@ problemCollection conn = do
     result <- lift $ getAllProblems (Pagination current perPage) conn
     ok $ toResponse $ toJObjs "problems" result
 
-problemElement :: ServerPart Response
-problemElement = do
-    ok $ toResponse $ JSON.encode "test2"
+problemElement :: IConnection c => ID -> c -> ServerPart Response
+problemElement pid conn = do
+    result <- lift $ getProblem pid conn
+    (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problem" result
 
 userSolutions :: IConnection c => c -> ServerPart Response
 userSolutions conn = do

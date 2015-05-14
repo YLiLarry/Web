@@ -48,6 +48,7 @@ export default Ember.Component.extend({
                     Cookies.set('session', session, {path: '/'});
                     $('#part-login').modal('hide');
                     $('body').trigger('login', sessionObj);
+                    location.reload();
                 }.bind(this),
                 error: function() {
                     this.set('message', "你的用户名或密码无效");

@@ -1,8 +1,10 @@
 <h4>
     {{model.title}}
-    <small> {{#link-to 'problem' model.prev}} 上一题 {{/link-to}} </small>
-    <small> {{#link-to 'problem' model.next}} 下一题 {{/link-to}} </small>
 </h4>
+<div>
+    {{#if model.prev}} <small> {{#link-to 'problem' model.prev}} 上一题 {{/link-to}} </small> {{/if}}
+    {{#if model.next}} <small> {{#link-to 'problem' model.next}} 下一题 {{/link-to}} </small> {{/if}}
+</div>
 <hr>
 <article>
     {{model.content}}

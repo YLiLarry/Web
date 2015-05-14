@@ -13,7 +13,10 @@ module DB.Internal (
     , column -- to be replaced by a general new function
     , Pagination(..)
     , getAll
+    , getOne
     , new
+    , nextID
+    , prevID
 ) where
 
 import Database.HDBC
@@ -25,7 +28,6 @@ type TableName = String
 type ColumnName = String
 type IOMaybe a = IO (Maybe a)
 type ID = Integer
-
 
 data Pagination = Pagination {
       current :: Int
@@ -58,8 +60,6 @@ connectDB = connectSqlite3 dbLocation
 getUserIDBy :: (Convertible a SqlValue, IConnection c) => (ColumnName, a) -> c -> IOMaybe ID
 getUserIDBy q = getIDBy q "User"
 
---getColsABy :: (IConnection c, Convertible a SqlValue, Convertible SqlValue b) => (ColumnName, a) -> TableName -> [ColumnName] -> c -> IOMaybe [(String, b)]
-
 getAll :: (IConnection c) => TableName -> [ColumnName] -> Pagination -> c -> IO [[(ColumnName, String)]]
 getAll tb cols pag conn = do
     let offset = show $ ((current pag) - 1) * (perPage pag)
@@ -68,7 +68,13 @@ getAll tb cols pag conn = do
     execute stmt []
     (fmap.fmap.fmap) (\(colName, sqlVal) -> (colName, fromSql sqlVal)) $ fetchAllRowsAL stmt
 
-
+getOne :: (IConnection c) => ID -> TableName -> [ColumnName] -> c -> IO (Maybe [(ColumnName, String)])
+getOne id tb cols conn = do
+    stmt <- prepare conn $ "SELECT " ++ intercalate "," cols ++ " FROM " ++ tb ++ " WHERE id = ?"
+    execute stmt [toSql id]
+    result <- fetchRowAL stmt
+    return $ maybe Nothing (Just . map (\(colName, sqlVal) -> (colName, fromSql sqlVal))) result
+    
 new :: IConnection c => TableName -> [ColumnName] -> [SqlValue] -> c -> IO ID 
 new tb cols vals conn = do
     stmt <- prepare conn $ "INSERT INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (\_ -> "?") cols) ++ ")"
@@ -76,3 +82,16 @@ new tb cols vals conn = do
     commit conn
     fmap (fromSql.head.head) $ quickQuery conn "SELECT last_insert_rowid();" []
     
+nextID :: IConnection c => ID -> TableName -> c -> IO (Maybe ID)
+nextID id tb conn = do 
+    stmt <- prepare conn $ "SELECT id FROM " ++ tb ++ " WHERE id > ?"
+    execute stmt [toSql id]
+    result <- fetchRow stmt
+    return $ maybe Nothing (fromSql.head) result    
+    
+prevID :: IConnection c => ID -> TableName -> c -> IO (Maybe ID)
+prevID id tb conn = do 
+    stmt <- prepare conn $ "SELECT id FROM " ++ tb ++ " WHERE id < ?"
+    execute stmt [toSql id]
+    result <- fetchRow stmt
+    return $ maybe Nothing (fromSql.head) result

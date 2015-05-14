@@ -19,7 +19,7 @@ main = do
                       dir "login" $ loginResponse conn
                     , dir "runhaskell" $ runHaskell conn
                     , dir "problems" $ problemCollection conn
-                    , dir "problems" $ problemElement 
+                    , dir "problems" $ path (\pid -> problemElement (read pid) conn)
                     , badRequest $ toResponse "Your request is illegal."
                 ]
             , msum [
