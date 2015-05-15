@@ -92,7 +92,7 @@ nextID id tb conn = do
     
 prevID :: IConnection c => ID -> TableName -> c -> IO (Maybe ID)
 prevID id tb conn = do 
-    stmt <- prepare conn $ "SELECT id FROM " ++ tb ++ " WHERE id < ?"
+    stmt <- prepare conn $ "SELECT id FROM " ++ tb ++ " WHERE id < ? ORDER BY id DESC LIMIT 1"
     execute stmt [toSql id]
     result <- fetchRow stmt
     return $ maybe Nothing (fromSql.head) result
