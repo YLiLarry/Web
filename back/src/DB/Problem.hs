@@ -73,13 +73,11 @@ getUserSolutions uid pag conn = join $ fmap sequence $ (fmap.fmap) lambda $ getA
             bool <- userSolvedProblem uid (read pid) conn
             return $ ("solvedByUser", JSON.encode bool) : assoc
 
-getUserSolution :: IConnection c => ID -> ID -> c -> IOMaybe Problem
+getUserSolution :: IConnection c => ID -> ID -> c -> IOMaybe [(ColumnName,String)]
 getUserSolution uid pid conn = do
     bool <- userSolvedProblem uid pid conn
-    if bool then do
-        (Just prob) <- getProblemByID pid conn
-        return $ Just $ prob { problemSolvedByUser = True }
-    else return Nothing
+    prob <- getProblem pid conn
+    return $ fmap (("isSolvedByUser", JSON.encode bool):) prob
     
 newUserSolution :: IConnection c => ID -> ID -> c -> IO ID
 newUserSolution uid pid = new "UserSolution" ["userID", "problemID"] [toSql uid, toSql pid]

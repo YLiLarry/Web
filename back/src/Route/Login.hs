@@ -14,6 +14,8 @@ loginResponse conn = do
     case result of
         (Left msg) -> unauthorized $ toResponse msg
         (Right (uid, username, email, token)) -> do
+            addCookie Session $ mkCookie "uid" (show uid)
+            addCookie Session $ mkCookie "token" (show token)
             ok $ toResponse $ encode $ toJSObject [
                       ("uid", show uid)
                     , ("username", username)

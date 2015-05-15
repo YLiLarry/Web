@@ -13,8 +13,11 @@ export default Ember.Component.extend({
     actions: {
         logout: function() {
             Cookies.remove('session', {path: '/'});
+            Cookies.remove('token', {path: '/'});
+            Cookies.remove('uid', {path: '/'});
             this.set('session','');
             $('body').trigger('logout');
+            location.reload();
         }
     }
 });

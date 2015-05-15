@@ -3,10 +3,11 @@ module Main where
 import Happstack.Lite
 import Text.Blaze.Html (preEscapedToHtml)
 import Data.Text
-import Happstack.Server (askRq, ServerMonad(..), rqUri, dirs, badRequest)
+import Happstack.Server (askRq, ServerMonad(..), rqUri, dirs, badRequest, readCookieValue, anyPath)
 import Happstack.Server.FileServe.BuildingBlocks (guessContentType)
 import Data.Maybe (fromMaybe)
 import Control.Monad
+import Control.Monad.Trans (lift)
 import DB
 import Route
 import Helper
@@ -17,6 +18,7 @@ main = do
     serve Nothing $ msum [
               dirs "api/v1" $ msum [
                       dir "login" $ loginResponse conn
+                    , protectedRoutes conn
                     , dir "runhaskell" $ runHaskell conn
                     , dir "problems" $ problemCollection conn
                     , dir "problems" $ path (\pid -> problemElement (read pid) conn)
@@ -28,6 +30,13 @@ main = do
                 ]
         ]
 
+protectedRoutes :: IConnection c => c -> ServerPart Response
+protectedRoutes conn = do 
+    uid <- readCookieValue "uid"
+    --token <- readCookieValue "token"
+    dir "problems" $ path (\pid -> userSolution uid (read pid) conn)
+    
+                        
 homePage :: ServerPart Response
 homePage = load "index.html"
 

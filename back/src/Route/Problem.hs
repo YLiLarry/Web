@@ -27,10 +27,8 @@ userSolutions conn = do
     ok $ toResponse $ JSON.encode result
     
 
-userSolution :: IConnection c => c -> ServerPart Response
-userSolution conn = do
-    uid <- lookRead "uid"
-    pid <- lookRead "pid"
+userSolution :: IConnection c => ID -> ID -> c -> ServerPart Response
+userSolution uid pid conn = do
     result <- lift $ getUserSolution uid pid conn
-    ok $ toResponse $ JSON.encode result
+    (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problem" result
     
