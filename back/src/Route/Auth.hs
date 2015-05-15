@@ -1,16 +1,17 @@
-module Route.Login where
-    
-import Happstack.Server
-import DB
-import Control.Monad.Trans
-import Control.Monad
-import Text.JSON
+module Route.Auth where
 
-loginResponse :: IConnection c => c -> ServerPart Response
-loginResponse conn = do
+import DB
+import Happstack.Server
+import Text.JSON
+import Control.Monad.Trans (lift)
+
+register :: IConnection c => c -> ServerPart Response
+register conn = do
     email <- look "email"
-    pwd <- look "password"
-    result <- lift $ login email pwd conn
+    password <- look "password"
+    username <- look "username"
+    lift $ newUser username email password conn
+    result <- lift $ login email password conn
     case result of
         (Left msg) -> unauthorized $ toResponse msg
         (Right (uid, username, email, token)) -> do
@@ -22,4 +23,3 @@ loginResponse conn = do
                     , ("email", email)
                     , ("token", token)
                 ]
-

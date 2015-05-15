@@ -2,6 +2,21 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
     actions: {
+        register: function() {
+            $.ajax({
+                method: 'POST',
+                url: 'api/v1/register',
+                data: {
+                    email: this.get('email'),
+                    username: this.get('username'),
+                    password: this.get('password')
+                },
+                success: function(session) {
+                    Cookies.set('session', session, {path: '/'});
+                    location.reload();
+                }
+            });  
+        },
         checkUsername: function() {
             if (! this.get('username')) {
                 this.set('usernameValid', false);

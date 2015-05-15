@@ -7,11 +7,12 @@ module DB (
     , module Database.HDBC
     , connectDB
     , Pagination(..)
+    , ID
 ) where
 
 import DB.User
 import DB.Auth
 import DB.Problem
-import DB.Internal (connectDB, Pagination(..))
+import DB.Internal (connectDB, Pagination(..), ID)
 import Database.HDBC
 
