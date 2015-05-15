@@ -18,13 +18,12 @@ problemElement pid conn = do
     result <- lift $ getProblem pid conn
     (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problem" result
 
-userSolutions :: IConnection c => c -> ServerPart Response
-userSolutions conn = do
-    uid <- lookRead "uid"
+userSolutions :: IConnection c => ID -> c -> ServerPart Response
+userSolutions uid conn = do
     current <- lookRead "current"
     perPage <- lookRead "perpage"
     result <- lift $ getUserSolutions uid (Pagination current perPage) conn
-    ok $ toResponse $ JSON.encode result
+    ok $ toResponse $ toJObjs "problems" result
 
 userSolution :: IConnection c => ID -> ID -> c -> ServerPart Response
 userSolution uid pid conn = do
