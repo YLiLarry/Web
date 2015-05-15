@@ -17,6 +17,7 @@ module DB.Internal (
     , new
     , nextID
     , prevID
+    , hasPair
 ) where
 
 import Database.HDBC
@@ -95,3 +96,10 @@ prevID id tb conn = do
     execute stmt [toSql id]
     result <- fetchRow stmt
     return $ maybe Nothing (fromSql.head) result
+
+hasPair :: IConnection c => TableName -> (ColumnName, ColumnName) -> (ID, ID) -> c -> IO Bool
+hasPair tb (cl1, cl2) (id1, id2) conn = do
+    stmt <- prepare conn $ "SELECT id FROM " ++ tb ++ " WHERE " ++ cl1 ++ " = ? AND " ++ cl2 ++ " = ?"
+    execute stmt [toSql id1, toSql id2]
+    result <- fetchRow stmt
+    return $ maybe False (const True) result

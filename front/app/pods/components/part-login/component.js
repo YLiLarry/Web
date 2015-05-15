@@ -44,10 +44,10 @@ export default Ember.Component.extend({
                     password: this.get('password')
                 },
                 success: function(session) {
-                    var sessionObj = JSON.parse(session);
+                    // var sessionObj = JSON.parse(session);
                     Cookies.set('session', session, {path: '/'});
-                    $('#part-login').modal('hide');
-                    $('body').trigger('login', sessionObj);
+                    // $('#part-login').modal('hide');
+                    // $('body').trigger('login', sessionObj);
                     location.reload();
                 }.bind(this),
                 error: function() {

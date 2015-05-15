@@ -21,12 +21,13 @@ export default Ember.Controller.extend({
             var controller = this;
             var file = new Blob([$('#file-content').val()], {type: 'text/plain'});
             var form = new FormData();
-            form.append('question', 'q1');
-            form.append('hsfile', file, 'test.hs');
+            form.append('problem', this.get('model.id'));
+            form.append('file', file, 'q'+this.get('model.id'));
+            form.append('language', 'plain');
             // post
             $.ajax({
                 method: "POST",
-                url: "/api/v1/runhaskell",
+                url: "/api/v1/compile",
                 contentType: false,
                 processData: false,
                 data: form,

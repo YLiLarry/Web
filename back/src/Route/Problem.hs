@@ -25,10 +25,8 @@ userSolutions conn = do
     perPage <- lookRead "perpage"
     result <- lift $ getUserSolutions uid (Pagination current perPage) conn
     ok $ toResponse $ JSON.encode result
-    
 
 userSolution :: IConnection c => ID -> ID -> c -> ServerPart Response
 userSolution uid pid conn = do
     result <- lift $ getUserSolution uid pid conn
     (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problem" result
-    

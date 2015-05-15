@@ -4,7 +4,7 @@ export default DS.Model.extend({
     title: DS.attr("string"),
     content: DS.attr("string"),
     answerCount: DS.attr("number"),
-    isSolvedByUser: DS.attr("boolean"),
+    solvedByUser: DS.attr("boolean"),
     friendSolutionCount: DS.attr("number"),
     next: DS.attr("number"),
     prev: DS.attr("number"),

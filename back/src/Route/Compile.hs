@@ -1,4 +1,4 @@
-module Route.RunHaskell where
+module Route.Compile where
 
 import Text.JSON as JSON (encode)
 import Happstack.Server
@@ -10,20 +10,19 @@ import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import System.Exit (ExitCode(..))
 import Data.Text.Lazy as Text (splitOn, pack, append)
 import Data.Text.Lazy.IO as TextIO (readFile, writeFile)
-import DB (newUserSolution, IConnection)
+import DB (newUserSolution, IConnection, ID)
 
 import Helper
 
-runHaskell :: IConnection c => c -> ServerPart Response
-runHaskell conn = do
-    (filepath,filename,_) <- lookFile "hsfile"
+compile :: IConnection c => ID -> c -> ServerPart Response
+compile uid conn = do
+    (filepath,filename,_) <- lookFile "file"
     pid <- look "problem"
-    uid <- look "uid"
     language <- look "language"
     wd <- lift getCurrentDirectory
     let binPath = wd ++ "/bin/" ++ language
     let problemPath = wd ++ "/bin/plain/q" ++ pid
-    let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ uid
+    let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show uid
     lift $ createDirectoryIfMissing True compilePath
     lift $ splitUserAnswerTo compilePath filepath
     (exitCode, out, error) <- lift $ readCreateProcessWithExitCode 
@@ -34,7 +33,7 @@ runHaskell conn = do
     if (exitCode /= ExitSuccess) 
     then badRequest $ toResponse result
     else do
-        lift $ newUserSolution (read uid) (read pid) conn
+        lift $ newUserSolution uid (read pid) conn
         ok $ toResponse result
 
 splitUserAnswerTo :: FilePath -> FilePath -> IO ()

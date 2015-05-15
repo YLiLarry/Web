@@ -63,7 +63,6 @@ getProblem pid conn = do
     return $ maybe Nothing
         (Just . ([("next", maybe "" show next), ("prev", maybe "" show prev)] ++)) 
         prb
-    
             
 getUserSolutions :: IConnection c => ID -> Pagination -> c -> IO [[(ColumnName,String)]]
 getUserSolutions uid pag conn = join $ fmap sequence $ (fmap.fmap) lambda $ getAllProblems pag conn
@@ -77,13 +76,13 @@ getUserSolution :: IConnection c => ID -> ID -> c -> IOMaybe [(ColumnName,String
 getUserSolution uid pid conn = do
     bool <- userSolvedProblem uid pid conn
     prob <- getProblem pid conn
-    return $ fmap (("isSolvedByUser", JSON.encode bool):) prob
+    return $ fmap (("solvedByUser", JSON.encode bool):) prob
     
 newUserSolution :: IConnection c => ID -> ID -> c -> IO ID
 newUserSolution uid pid = new "UserSolution" ["userID", "problemID"] [toSql uid, toSql pid]
-    
+
 userSolvedProblem :: IConnection c => ID -> ID -> c -> IO Bool    
-userSolvedProblem uid pid conn = return True
+userSolvedProblem uid pid conn = hasPair "UserSolution" ("userID", "problemID") (uid, pid) conn
 
 getAllProblems :: IConnection c => Pagination -> c -> IO [[(ColumnName,String)]]
 getAllProblems pag conn = getAll "Problem" ["id","title","content","answerCount"] pag conn 

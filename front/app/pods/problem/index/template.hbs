@@ -1,5 +1,9 @@
 <h4>
-    {{model.title}}
+    {{#if model.title}}
+        {{model.title}}
+    {{else}}
+        并没有什么标题
+    {{/if}}
 </h4>
 <div>
     {{#if model.prev}} <small> {{#link-to 'problem' model.prev}} 上一题 {{/link-to}} </small> {{/if}}
@@ -7,19 +11,23 @@
 </div>
 <hr>
 <article>
-    {{model.content}}
+    {{#if model.content}}
+        {{model.content}}
+    {{else}}
+        文章是空哒 ~(￣▽￣)~
+    {{/if}}
 </article>
 <hr>
-{{#if model.isSolvedByUser}}
+{{#if model.solvedByUser}}
 <div class="alert alert-warning">
     <strong> 答案正确 </strong>
     <p> 恭喜你答对了这道题 </p>
 </div>
+<hr>
 {{/if}}
-<hr>
-<h5> 小队 </h5>
+<!-- <h5> 小队 </h5>
 <div> 您可以独自解题，或者 <a> 邀请好友组队 </a> </div>
-<hr>
+<hr> -->
 <div class="upload">
     <div class="form">
         <div class="form-group">

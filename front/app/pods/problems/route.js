@@ -1,27 +1,22 @@
 import Ember from 'ember';
 
 export default Ember.Route.extend({
-    afterModel: function() {
-        // Ember.run.scheduleOnce('afterRender', this, function() {
-        //     var wall = new freewall('#freewall');
-        //     wall.fitWidth();
-        // });
-    },
-    model: function() {
-        // var id = 1;
-        // var arr = JSC.array(100, JSC.object({
-        //     title: "标题",
-        //     friendSolutionCount: JSC.integer(5),
-        //     isSolvedByUser: JSC.boolean(),
-        //     thumbnail: "http://www.intechopen.com/source/html/43273/media/image47.png",
-        //     answerCount: JSC.integer(10000),
-        // }))();
-        // arr.forEach(function(elem, idx) {
-        //     elem.id = id++;
-        // });
+    model: function(posts) {
         return this.store.find('problem', {
             current: 1,
             perpage: 100
         });
+    },
+    afterModel: function(route) {
+        var ls = route.store.all('problem');
+        var len = ls.get('length');
+        ls.forEach(function(elem,idx) {
+            if (idx > 0) {
+                elem.set('prev', ls.objectAt(idx - 1).get('id'));
+            }
+            if (idx + 1 < len) {
+                elem.set('next', ls.objectAt(idx + 1).get('id'));
+            }
+        })
     }
 });

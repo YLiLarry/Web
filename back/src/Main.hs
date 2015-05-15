@@ -19,7 +19,6 @@ main = do
               dirs "api/v1" $ msum [
                       dir "login" $ loginResponse conn
                     , protectedRoutes conn
-                    , dir "runhaskell" $ runHaskell conn
                     , dir "problems" $ problemCollection conn
                     , dir "problems" $ path (\pid -> problemElement (read pid) conn)
                     , badRequest $ toResponse "Your request is illegal."
@@ -34,9 +33,12 @@ protectedRoutes :: IConnection c => c -> ServerPart Response
 protectedRoutes conn = do 
     uid <- readCookieValue "uid"
     --token <- readCookieValue "token"
-    dir "problems" $ path (\pid -> userSolution uid (read pid) conn)
+    msum [
+              dir "problems" $ path (\pid -> userSolution uid (read pid) conn)
+            , dir "compile" $ compile uid conn
+        ]
+
     
-                        
 homePage :: ServerPart Response
 homePage = load "index.html"
 
