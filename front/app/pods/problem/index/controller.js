@@ -33,11 +33,11 @@ export default Ember.Controller.extend({
                 data: form,
                 success: function(response) {
                     controller.set('response', response);
-                    controller.set('answerCorrent', true);
+                    controller.set('model.solvedByUser', true);
                 }.bind(this),
                 error: function(response) {
                     controller.set('response', response.responseText);
-                    controller.set('answerCorrent', true);
+                    controller.set('model.solvedByUser', false);
                 }.bind(this)
             });
         }

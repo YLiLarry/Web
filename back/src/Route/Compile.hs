@@ -24,6 +24,7 @@ compile uid conn = do
     let problemPath = wd ++ "/bin/plain/q" ++ pid
     let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show uid
     lift $ createDirectoryIfMissing True compilePath
+    lift $ createDirectoryIfMissing True problemPath
     lift $ splitUserAnswerTo compilePath filepath
     (exitCode, out, error) <- lift $ readCreateProcessWithExitCode 
         (proc (binPath ++ "/compile") 
