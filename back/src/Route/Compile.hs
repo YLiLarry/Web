@@ -67,7 +67,7 @@ run compilePath input = do
     (exitCode, out, error) <- readCreateProcessWithExitCode 
         (shell $ "timeout -s KILL 5s " ++ compilePath ++ "main")
         (T.unpack input)
-    if (exitCode /= ExitSuccess)
+    if ((_p exitCode) /= ExitSuccess)
     then return $ Left error
     else return $ Right (T.pack out)
 

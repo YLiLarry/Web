@@ -37,7 +37,7 @@ main = do
             
     T.writeFile safeCode safeContent 
     
-    catch (callCommand $ "ghc " ++ safeCode) (\ (_:: SomeException) -> exitFailure)
+    catch (callCommand $ "ghc " ++ safeCode ++ " -o " ++ compilePath ++ "main") (\ (_:: SomeException) -> exitFailure)
     
     where
         safeHead = "{-# LANGUAGE Safe #-}"
