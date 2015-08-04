@@ -2,13 +2,13 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
     model: function(posts) {
-        return this.store.find('problem', {
+        return this.store.query('problems', {
             current: 1,
             perpage: 100
         });
     },
     afterModel: function(route) {
-        var ls = route.store.all('problem');
+        var ls = route.store.peekAll('problems');
         var len = ls.get('length');
         ls.forEach(function(elem,idx) {
             if (idx > 0) {

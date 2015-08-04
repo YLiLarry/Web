@@ -9,12 +9,17 @@ export default Router.map(function() {
   this.route('login');
   this.route('register');
   this.route('problems', function() {
+    // this.route('index', {
+    //   path: '/:id',
+    // });
+    this.route('problem', {
+      path: '/:id',
+    });
+    this.route('all', {
+      path: '/',
+    });
     this.route('invited');
     this.route('recommended');
   });
-  this.route('problem', function() {
-    this.route('index', {
-      path: ':id'
-    });
-  });
 });
+  

@@ -23,7 +23,7 @@ export default Ember.Controller.extend({
             var form = new FormData();
             form.append('problem', this.get('model.id'));
             form.append('file', file, 'q'+this.get('model.id'));
-            form.append('language', 'plain');
+            form.append('language', 'haskell');
             // post
             $.ajax({
                 method: "POST",
