@@ -43,7 +43,7 @@ checkAnswer uid conn = do
             lift $ newUserSolution uid (read pid) conn -- user solved solution
             ok $ toResponse "Correct" 
         Just err -> do
-            badRequest $ toResponse $ JSON.encode err
+            badRequest $ toResponse err
         
 
 -- | Calls the "compile" binary under the language directory with the user code path, compilation path, and the problem id
@@ -57,7 +57,9 @@ compile pid filePath binPath problemPath compilePath = do
         ""
     if (exitCode == ExitSuccess) 
     then return $ Nothing
-    else return $ Just error
+    else return $ Just $ dropFirstLine error
+    where
+        dropFirstLine = unlines.drop 2.lines
 
 -- | Runs the "main" binary in the compilation path, with the given input and return the output
 run :: DirectoryPath -> Text -> IO (Either Error Text)
