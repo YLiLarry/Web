@@ -70,6 +70,7 @@ executable main
                      , directory
                      , json
                      , text
+                     , filepath >= 1.4.0.0
                      
   -- Directories containing source files.
   hs-source-dirs:      src
@@ -95,6 +96,7 @@ executable test-auth
                      , directory
                      , json
                      , text
+                     , filepath >= 1.4.0.0
                      
 executable test-user
   hs-source-dirs:      test, src
@@ -112,6 +114,7 @@ executable test-user
                      , directory
                      , json
                      , text                     
+                     , filepath >= 1.4.0.0
                      
 executable test-problem
   hs-source-dirs:      test, src
@@ -129,4 +132,5 @@ executable test-problem
                      , directory
                      , json
                      , text
+                     , filepath >= 1.4.0.0
   

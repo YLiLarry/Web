@@ -37,7 +37,7 @@ protectedRoutes conn = do
     msum [
               dir "problems" $ path (\pid -> userSolution uid (read pid) conn)
             , dir "problems" $ userSolutions uid conn
-            , dir "compile" $ compile uid conn
+            , dir "compile" $ checkAnswer uid conn
         ]
 
     

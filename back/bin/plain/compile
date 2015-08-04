@@ -2,6 +2,8 @@ file="${1}"
 qPath="${2}"
 outPath="${3}"
 
+./splitUserAnswerTo "${3}" "${1}"
+
 catOut="${qPath}/cat/out.txt"
 
 allOuts=$(ls "${qPath}" | sort -g | egrep ".out$")
