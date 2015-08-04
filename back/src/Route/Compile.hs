@@ -33,9 +33,10 @@ checkAnswer uid conn = do
     let problemPath = wd ++ "/bin/plain/q" ++ pid ++ "/"
     let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show uid ++ "/"
     
-    result <- lift $ do
-        compile pid filePath binPath problemPath compilePath
-        runForEachInput problemPath compilePath
+    result <- lift $ msum [
+              compile pid filePath binPath problemPath compilePath
+            , runForEachInput problemPath compilePath
+        ]
         
     case result of
         Nothing  -> do
@@ -54,9 +55,9 @@ compile pid filePath binPath problemPath compilePath = do
         (proc (binPath ++ "compile") 
             [filePath,compilePath,pid]) { cwd = Just binPath }
         ""
-    if (exitCode /= ExitSuccess) 
-    then return $ Just error
-    else return $ Nothing
+    if (exitCode == ExitSuccess) 
+    then return $ Nothing
+    else return $ Just error
 
 -- | Runs the "main" binary in the compilation path, with the given input and return the output
 run :: DirectoryPath -> Text -> IO (Either Error Text)
@@ -64,7 +65,7 @@ run compilePath input = do
     (exitCode, out, error) <- readCreateProcessWithExitCode 
         (shell $ "timeout -s KILL 5s " ++ compilePath ++ "main")
         (T.unpack input)
-    if (exitCode /= ExitSuccess) 
+    if (exitCode /= ExitSuccess)
     then return $ Left error
     else return $ Right (T.pack out)
 

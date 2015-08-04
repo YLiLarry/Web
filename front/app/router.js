@@ -9,9 +9,6 @@ export default Router.map(function() {
   this.route('login');
   this.route('register');
   this.route('problems', function() {
-    // this.route('index', {
-    //   path: '/:id',
-    // });
     this.route('problem', {
       path: '/:id',
     });

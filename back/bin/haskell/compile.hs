@@ -1,12 +1,16 @@
 -- | This file compiles the user uploaded code to the given directory
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Main where
 
 import System.Environment (getArgs, getExecutablePath)
 import Data.Text.Lazy as T (unlines, pack)
 import Data.Text.Lazy.IO as T (readFile, writeFile)
+import System.Process (callCommand)
+import Control.Exception (catch, SomeException)
+import System.Exit (exitFailure)
 
 main :: IO ()
 main = do
@@ -33,5 +37,9 @@ main = do
             
     T.writeFile safeCode safeContent 
     
+    catch (callCommand $ "ghc " ++ safeCode) (\ (_:: SomeException) -> exitFailure)
+    
     where
         safeHead = "{-# LANGUAGE Safe #-}"
+            
+            

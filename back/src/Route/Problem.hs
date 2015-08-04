@@ -13,10 +13,11 @@ problemCollection conn = do
     result <- lift $ getAllProblems (Pagination current perPage) conn
     ok $ toResponse $ toJObjs "problems" result
 
-problemElement :: IConnection c => ID -> c -> ServerPart Response
-problemElement pid conn = do
+problemElement :: IConnection c => c -> ServerPart Response
+problemElement conn = do
+    pid <- lookRead "id"
     result <- lift $ getProblem pid conn
-    (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problem" result
+    (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problems" result
 
 userSolutions :: IConnection c => ID -> c -> ServerPart Response
 userSolutions uid conn = do
@@ -28,4 +29,4 @@ userSolutions uid conn = do
 userSolution :: IConnection c => ID -> ID -> c -> ServerPart Response
 userSolution uid pid conn = do
     result <- lift $ getUserSolution uid pid conn
-    (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problem" result
+    (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problems" result

@@ -2,5 +2,5 @@ import DS from 'ember-data';
 
 export default DS.RESTAdapter.extend({
     namespace: "api/v1",
-    defaultSerializer: '-default'
+    shouldBackgroundReloadRecord: function() {return true;}
 });

@@ -20,8 +20,8 @@ main = do
                       dir "login" $ loginResponse conn
                     , protectedRoutes conn
                     , dir "register" $ register conn
+                    , dir "problems" $ problemElement conn
                     , dir "problems" $ problemCollection conn
-                    , dir "problems" $ path (\pid -> problemElement (read pid) conn)
                     , badRequest $ toResponse "Your request is illegal."
                 ]
             , msum [
