@@ -13,8 +13,8 @@ App = Ember.Application.extend({
     Resolver: Resolver
 });
 
-Ember.View.reopen({
-    didInsertElement: function() {
+Ember.Controller.reopen({
+    init: function() {
         var en = Cookies.get('session');
         if (en) {
             this.set('session', JSON.parse(en));

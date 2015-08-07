@@ -5,6 +5,7 @@ import Data.Maybe (isJust)
 import Data.Text.Lazy as T (empty)
 import Control.Monad (msum, mplus)
 import Control.Applicative ((<|>))
+import DB
 
 main :: IO ()
 main = do

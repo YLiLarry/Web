@@ -71,6 +71,9 @@ executable main
                      , json
                      , text
                      , filepath >= 1.4.0.0
+                     , cryptohash
+                     , random
+                     , bytestring
                      
   -- Directories containing source files.
   hs-source-dirs:      src
@@ -97,6 +100,9 @@ executable test-auth
                      , json
                      , text
                      , filepath >= 1.4.0.0
+                     , cryptohash
+                     , random
+                     , bytestring
                      
 executable test-user
   hs-source-dirs:      test, src
@@ -115,6 +121,9 @@ executable test-user
                      , json
                      , text                     
                      , filepath >= 1.4.0.0
+                     , cryptohash
+                     , random
+                     , bytestring
                      
 executable test-problem
   hs-source-dirs:      test, src
@@ -133,6 +142,9 @@ executable test-problem
                      , json
                      , text
                      , filepath >= 1.4.0.0
+                     , cryptohash
+                     , random
+                     , bytestring
   
 executable test-compile
   hs-source-dirs:      test, src
@@ -154,5 +166,32 @@ executable test-compile
                      , filepath >= 1.4.0.0
                      , hspec >= 2.1.7
                      , QuickCheck >= 2.8.1
+                     , cryptohash
+                     , random
+                     , bytestring
+                     
+executable test-helper
+  hs-source-dirs:      test, src
+  main-is:             HelperTest.hs
+  default-language:    Haskell2010
+  build-depends:       base >=4.7 && <4.8
+                     , happstack-lite
+                     , blaze-html
+                     , text
+                     , happstack-server
+                     , HDBC
+                     , HDBC-sqlite3
+                     , convertible
+                     , mtl
+                     , process >= 1.2.3.0
+                     , directory
+                     , json
+                     , text
+                     , filepath >= 1.4.0.0
+                     , hspec >= 2.1.7
+                     , QuickCheck >= 2.8.1
+                     , cryptohash
+                     , random
+                     , bytestring
                      
                      

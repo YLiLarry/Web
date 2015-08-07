@@ -1,4 +1,5 @@
 import TestTools
+import DB
 
 main :: IO ()
 main = do

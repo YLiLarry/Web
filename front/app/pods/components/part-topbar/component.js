@@ -8,6 +8,10 @@ export default Ember.Component.extend({
             $('body').on('login', function(event, data) {
                 Component.set('session', data);
             });
+            var en = Cookies.get('session');
+            if (en) {
+                this.set('session', JSON.parse(en));
+            }
         });
     },
     actions: {

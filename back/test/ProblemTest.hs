@@ -4,7 +4,7 @@ import Control.Applicative (liftA2)
 import Test.QuickCheck.Property (morallyDubiousIOProperty, property, Result)
 import Test.Hspec.QuickCheck (prop)
 import Control.Monad
-
+import DB
 
 main :: IO ()
 main = do

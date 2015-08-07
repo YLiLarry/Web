@@ -25,7 +25,7 @@ main = do
                     , badRequest $ toResponse "Your request is illegal."
                 ]
             , msum [
-                      loadAnyPage
+                      loadResource
                     , homePage
                 ]
         ]
@@ -47,8 +47,8 @@ homePage = load "index.html"
 page404 :: ServerPart Response
 page404 = load "404.html"
 
-loadAnyPage :: ServerPart Response
-loadAnyPage = load =<< fullpath 
+loadResource :: ServerPart Response
+loadResource = load =<< fullpath 
     
 -- | Get the full request path without quries
 fullpath :: ServerMonad m => m String

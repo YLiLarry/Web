@@ -1,4 +1,6 @@
 import TestTools
+import Helper
+import DB
 
 main :: IO ()
 main = do
@@ -6,10 +8,10 @@ main = do
     hspec $ do
         describe "Create a token for a uid and read token for that uid" $ do
             it "Should be equal" $ do
-                t <- newUserIDToken 1412 conn
+                t <- newUserIDToken 1412 "email" conn
                 uid <- getUserIDByToken t conn
-                uid `shouldBe` (Just 1412)
+                uid `shouldSatisfy` isJust
                 uid <- getUserIDByToken t conn
-                uid `shouldBe` (Just 1412)
+                uid `shouldSatisfy` isJust
             
             
