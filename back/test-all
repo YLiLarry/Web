@@ -2,6 +2,7 @@ list="
     test-auth
     test-user
     test-problem
+    test-compile
 "
 pass=True
 for i in ${list} 

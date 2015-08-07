@@ -14,10 +14,10 @@ problemCollection conn = do
     ok $ toResponse $ toJObjs "problems" result
 
 problemElement :: IConnection c => c -> ServerPart Response
-problemElement conn = do
-    pid <- lookRead "id"
-    result <- lift $ getProblem pid conn
-    (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problems" result
+problemElement conn = path handler
+    where handler pid = do
+            result <- lift $ getProblem (read pid) conn
+            (if (result == Nothing) then notFound else ok) $ toResponse $ toJObj "problems" result
 
 userSolutions :: IConnection c => ID -> c -> ServerPart Response
 userSolutions uid conn = do

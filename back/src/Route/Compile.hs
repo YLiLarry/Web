@@ -33,7 +33,7 @@ checkAnswer uid conn = do
     let problemPath = wd ++ "/bin/plain/q" ++ pid ++ "/"
     let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show uid ++ "/"
     
-    result <- lift $ msum [
+    result <- lift $ fmap msum $ sequence [
               compile pid filePath binPath problemPath compilePath
             , runForEachInput problemPath compilePath
         ]
@@ -65,11 +65,12 @@ compile pid filePath binPath problemPath compilePath = do
 run :: DirectoryPath -> Text -> IO (Either Error Text)
 run compilePath input = do
     (exitCode, out, error) <- readCreateProcessWithExitCode 
-        (shell $ "timeout -s KILL 5s " ++ compilePath ++ "main")
+        (shell $ "timeout -s KILL 2s " ++ compilePath ++ "main")
         (T.unpack input)
-    if ((_p exitCode) /= ExitSuccess)
-    then return $ Left error
-    else return $ Right (T.pack out)
+    case exitCode of
+        ExitSuccess      -> return $ Right $ T.pack out
+        ExitFailure (-9) -> return $ Left    "Program times out."
+        otherwise        -> return $ Left  $ error
 
 -- | Runs the "main" binary in the compilation path with each input in the problem path, 
 --   and check the output against the expecation.
@@ -97,5 +98,5 @@ inOutFiles path = do
 searchFileExt :: String -> DirectoryPath -> IO [FilePath]
 searchFileExt path ext = do
     list <- getDirectoryContents path
-    return $ filter (ext `isSuffixOf`) list
+    return $ map (path ++) $ filter (ext `isSuffixOf`) list
 
