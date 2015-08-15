@@ -18,6 +18,7 @@ module DB.Internal (
     , nextID
     , prevID
     , hasPair
+    , newPagination
 ) where
 
 import Database.HDBC
@@ -32,9 +33,12 @@ type ID = Integer
 
 data Pagination = Pagination {
       current :: Int
-    --, total   :: Int
+    , total   :: Int
     , perPage :: Int
-}
+} deriving (Show)
+
+newPagination :: Int -> Int -> Pagination
+newPagination c p = Pagination c 0 p
 
 dbLocation :: FilePath
 dbLocation = "../db.sqlite"
@@ -61,13 +65,16 @@ connectDB = connectSqlite3 dbLocation
 getUserIDBy :: (Convertible a SqlValue, IConnection c) => (ColumnName, a) -> c -> IOMaybe ID
 getUserIDBy q = getIDBy q "User"
 
-getAll :: (IConnection c) => TableName -> [ColumnName] -> Pagination -> c -> IO [[(ColumnName, String)]]
+getAll :: (IConnection c) => TableName -> [ColumnName] -> Pagination -> c -> IO ([[(ColumnName, String)]], Pagination)
 getAll tb cols pag conn = do
     let offset = show $ ((current pag) - 1) * (perPage pag)
     let top    = show $ perPage pag
     stmt <- prepare conn $ "SELECT " ++ intercalate "," cols ++ " FROM " ++ tb ++ " LIMIT " ++ offset ++ ", " ++ top
     execute stmt []
-    (fmap.fmap.fmap) (\(colName, sqlVal) -> (colName, fromSql sqlVal)) $ fetchAllRowsAL stmt
+    result <- fetchAllRowsAL stmt
+    count <- quickQuery conn ("SELECT COUNT(*) FROM " ++ tb) []
+    let ls = (map.map) (\(colName, sqlVal) -> (colName, fromSql sqlVal)) $ result
+    return (ls, pag {total = fromSql $ head $ head count})
 
 getOne :: (IConnection c) => ID -> TableName -> [ColumnName] -> c -> IO (Maybe [(ColumnName, String)])
 getOne id tb cols conn = do

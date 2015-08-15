@@ -1,0 +1,25 @@
+<nav>
+  <ul class="pagination">
+    <li>
+      <a href="#" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {{#each pageArr as |page|}}
+        {{#if page.clickable}}
+            <li class={{if page.active "active"}} {{action 'changePage' page.number}}>
+                {{#link-to (query-params page=page.number)}}
+                    {{page.number}}
+                {{/link-to}}
+            </li>
+        {{else}}
+            <li><a>{{page.number}}</a></li>
+        {{/if}}
+    {{/each}}
+    <li>
+      <a href="#" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>

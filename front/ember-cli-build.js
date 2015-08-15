@@ -18,7 +18,6 @@ module.exports = function(defaults) {
   // });
   // app.import('bower_components/font-awesome/css/font-awesome.min.css');
 
-  app.import('bower_components/freewall/freewall.js');
   app.import('bower_components/jscheck/jscheck.js');
   app.import('bower_components/js-cookie/src/js.cookie.js');
 

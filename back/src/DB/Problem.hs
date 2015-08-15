@@ -65,7 +65,7 @@ getProblem pid conn = do
         prb
             
 getUserSolutions :: IConnection c => ID -> Pagination -> c -> IO [[(ColumnName,String)]]
-getUserSolutions uid pag conn = join $ fmap sequence $ (fmap.fmap) lambda $ getAllProblems pag conn
+getUserSolutions uid pag conn = join $ fmap sequence $ (fmap.fmap) lambda $ fmap fst $ getAllProblems pag conn
     where
         lambda assoc = do
             let (Just pid) = lookup "id" assoc
@@ -84,6 +84,6 @@ newUserSolution uid pid = new "UserSolution" ["userID", "problemID"] [toSql uid,
 userSolvedProblem :: IConnection c => ID -> ID -> c -> IO Bool    
 userSolvedProblem uid pid conn = hasPair "UserSolution" ("userID", "problemID") (uid, pid) conn
 
-getAllProblems :: IConnection c => Pagination -> c -> IO [[(ColumnName,String)]]
+getAllProblems :: IConnection c => Pagination -> c -> IO ([[(ColumnName,String)]], Pagination)
 getAllProblems pag conn = getAll "Problem" ["id","title","content","answerCount"] pag conn 
 
