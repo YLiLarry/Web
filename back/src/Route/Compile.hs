@@ -9,18 +9,20 @@ import Control.Monad (forM_, msum)
 --import Control.Exception (catch)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing, getDirectoryContents)
 import System.Exit (ExitCode(..))
-import DB (newUserSolution, IConnection, ID)
+import DB (IConnection, ID)
+import DB.Problem (newUserSolution)
 import System.FilePath (replaceExtension)
 import Data.Text.Lazy as T (Text, pack, unpack)
 import Data.Text.Lazy.IO as T (readFile, writeFile)
 import Data.List (isSuffixOf)
+import Route.Internal (ConnServer)
 
 import Helper
 
 type Error         = String
 type DirectoryPath = String
 
-checkAnswer :: IConnection c => ID -> c -> ServerPart Response
+checkAnswer :: ID -> ConnServer Response
 checkAnswer uid conn = do
     -- read query params
     (filePath,_,_) <- lookFile "file"

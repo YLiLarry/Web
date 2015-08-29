@@ -58,14 +58,13 @@ executable main
   
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.7 && <4.8
-                     , happstack-lite
                      , blaze-html
                      , text
-                     , happstack-server
+                     , happstack-server >= 7.4.4
                      , HDBC
                      , HDBC-sqlite3
                      , convertible
-                     , mtl
+                     , mtl >= 2.2
                      , process >= 1.2.3.0
                      , directory
                      , json
@@ -74,6 +73,10 @@ executable main
                      , cryptohash
                      , random
                      , bytestring
+                     , transformers >= 0.4.3
+                     , transformers-compat >= 0.4.0
+                     , aeson >= 0.9.0
+                     , unordered-containers >= 0.2.5.1
                      
   -- Directories containing source files.
   hs-source-dirs:      src
@@ -88,13 +91,13 @@ executable test-auth
   main-is:             AuthTest.hs
   default-language:    Haskell2010
   build-depends:       base
-                     , happstack-server
+                     , happstack-server >= 7.4.4
                      , HDBC
                      , HDBC-sqlite3
                      , hspec >= 2.1.7
                      , convertible  
                      , QuickCheck >= 2.8.1
-                     , mtl
+                     , mtl >= 2.2
                      , process >= 1.2.3.0
                      , directory
                      , json
@@ -103,19 +106,23 @@ executable test-auth
                      , cryptohash
                      , random
                      , bytestring
+                     , transformers >= 0.4.3
+                     , transformers-compat >= 0.4.0
+                     , aeson >= 0.9.0
+                     , unordered-containers >= 0.2.5.1
                      
 executable test-user
   hs-source-dirs:      test, src
   main-is:             UserTest.hs
   default-language:    Haskell2010
   build-depends:       base
-                     , happstack-server
+                     , happstack-server >= 7.4.4
                      , HDBC
                      , HDBC-sqlite3
                      , hspec >= 2.1.7
                      , convertible
                      , QuickCheck >= 2.8.1
-                     , mtl
+                     , mtl >= 2.2
                      , process >= 1.2.3.0
                      , directory
                      , json
@@ -124,19 +131,23 @@ executable test-user
                      , cryptohash
                      , random
                      , bytestring
+                     , transformers >= 0.4.3
+                     , transformers-compat >= 0.4.0
+                     , aeson >= 0.9.0
+                     , unordered-containers >= 0.2.5.1
                      
 executable test-problem
   hs-source-dirs:      test, src
   main-is:             ProblemTest.hs
   default-language:    Haskell2010
   build-depends:       base
-                     , happstack-server
+                     , happstack-server >= 7.4.4
                      , HDBC
                      , HDBC-sqlite3
                      , hspec >= 2.1.7
                      , convertible
                      , QuickCheck >= 2.8.1
-                     , mtl
+                     , mtl >= 2.2
                      , process >= 1.2.3.0
                      , directory
                      , json
@@ -145,20 +156,23 @@ executable test-problem
                      , cryptohash
                      , random
                      , bytestring
+                     , transformers >= 0.4.3
+                     , transformers-compat >= 0.4.0
+                     , aeson >= 0.9.0
+                     , unordered-containers >= 0.2.5.1
   
 executable test-compile
   hs-source-dirs:      test, src
   main-is:             CompileTest.hs
   default-language:    Haskell2010
   build-depends:       base >=4.7 && <4.8
-                     , happstack-lite
                      , blaze-html
                      , text
-                     , happstack-server
+                     , happstack-server >= 7.4.4
                      , HDBC
                      , HDBC-sqlite3
                      , convertible
-                     , mtl
+                     , mtl >= 2.2
                      , process >= 1.2.3.0
                      , directory
                      , json
@@ -169,20 +183,23 @@ executable test-compile
                      , cryptohash
                      , random
                      , bytestring
+                     , transformers >= 0.4.3
+                     , transformers-compat >= 0.4.0
+                     , aeson >= 0.9.0
+                     , unordered-containers >= 0.2.5.1
                      
 executable test-helper
   hs-source-dirs:      test, src
   main-is:             HelperTest.hs
   default-language:    Haskell2010
   build-depends:       base >=4.7 && <4.8
-                     , happstack-lite
                      , blaze-html
                      , text
-                     , happstack-server
+                     , happstack-server >= 7.4.4
                      , HDBC
                      , HDBC-sqlite3
                      , convertible
-                     , mtl
+                     , mtl >= 2.2
                      , process >= 1.2.3.0
                      , directory
                      , json
@@ -193,5 +210,9 @@ executable test-helper
                      , cryptohash
                      , random
                      , bytestring
+                     , transformers >= 0.4.3
+                     , transformers-compat >= 0.4.0
+                     , aeson >= 0.9.0
+                     , unordered-containers >= 0.2.5.1
                      
                      

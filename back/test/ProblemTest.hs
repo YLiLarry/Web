@@ -34,7 +34,7 @@ main = do
         
         prop_getAllProblems :: (IConnection c) => c -> Positive Int -> Positive Int -> IO Bool
         prop_getAllProblems conn c p = do
-            collection <- getAllProblems (Pagination (getPositive c) (getPositive p)) conn
+            (collection, pag) <- getAllProblems (newPagination (getPositive c) (getPositive p)) conn
             return $ length collection > 0
             
         prop_newUserSolution :: (IConnection c) => c -> Positive Integer -> Positive Integer -> IO Bool

@@ -2,24 +2,22 @@ module Route.Login where
     
 import Happstack.Server
 import DB
+import DB.Auth
+import Route.Internal
 import Control.Monad.Trans
 import Control.Monad
 import Text.JSON
 
-loginResponse :: IConnection c => c -> ServerPart Response
-loginResponse conn = do
-    email <- look "email"
-    pwd <- look "password"
-    result <- lift $ login email pwd conn
-    case result of
-        (Left msg) -> unauthorized $ toResponse msg
-        (Right (uid, username, email, token)) -> do
-            addCookie Session $ mkCookie "uid" $ show uid
-            addCookie Session $ mkCookie "token" token
-            ok $ toResponse $ encode $ toJSObject [
-                      ("uid", show uid)
-                    , ("username", username)
-                    , ("email", email)
-                    , ("token", token)
-                ]
-
+loginResponse :: ConnServer Response
+loginResponse = do
+    email <- lift $ look "email"
+    pwd <- lift $ look "password"
+    (uid, username, email, token) <- connEitherToServer $ loginByEmail email pwd
+    addCookie Session $ mkCookie "uid" $ show uid
+    addCookie Session $ mkCookie "token" token
+    ok $ toResponse $ encode $ toJSObject [
+              ("uid", show uid)
+            , ("username", username)
+            , ("email", email)
+            , ("token", token)
+        ]

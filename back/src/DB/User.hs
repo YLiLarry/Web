@@ -1,33 +1,43 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RankNTypes #-}
 
 module DB.User where
 
 import DB.Internal
 import Data.Convertible
+import Data.Either
+import Data.Maybe
+import Prelude hiding (id)
     
 type UserID   = Integer
 type Username = String
 type Email    = String
 type Password = String
 
+data User = User {
+      id :: Integer
+    , name :: String
+    , email :: String
+    , password :: String
+    , token :: String
+} deriving (Generic, Show)
     
-getByUserID :: (Convertible SqlValue b, IConnection c) => UserID -> ColumnName -> c -> IOMaybe b
-getByUserID id = getByID id "User"
+getByUserID :: (Convertible SqlValue b) => ColumnName -> UserID -> ConnMaybe b
+getByUserID col id = getByID id "User" col
 
-getUsername :: IConnection c => UserID -> c -> IOMaybe Username
-getUsername id = getByUserID id "username"  
+getNameByID :: UserID -> ConnMaybe Username
+getNameByID = getByUserID "username"  
     
-getUserByEmail :: IConnection c => Email -> c -> IOMaybe UserID
-getUserByEmail name = getUserIDBy ("email=", name)
+getIDByEmail :: Email -> ConnMaybe UserID
+getIDByEmail name = getUserIDBy ("email=", name)
 
-newUser :: IConnection c => Username -> Email -> Password -> c -> IOMaybe UserID
-newUser name email password conn = do
-    stmt <- prepare conn "INSERT INTO User (username, email, password) VALUES (?,?,?)"
-    execute stmt [ toSql name, toSql email, toSql password ]
-    commit conn
-    getUserByEmail email conn
+newUser :: Username -> Email -> Password -> ConnEither UserID
+newUser name email password = newEither "User" ["username", "email", "password"] [toSql name, toSql email, toSql password]
 
-getUserPassword :: IConnection c => UserID -> c -> IOMaybe Password
-getUserPassword id = getByUserID id "password"
+getPasswordByID :: UserID -> ConnMaybe Password
+getPasswordByID = getByUserID "password"
     
+getEmailByID :: UserID -> ConnMaybe Email
+getEmailByID = getByUserID "email"
 

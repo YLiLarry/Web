@@ -1,89 +1,103 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RankNTypes #-}
 
 module DB.Problem where
 
+import Prelude hiding (id)
+
 import DB.Internal
---import Data.Text
-import Control.Monad (join)
+import Control.Monad
 import Text.JSON as JSON (encode, JSON, toJSObject)
+import DB.Internal.Query as Q
+import DB.Internal.PropertyMethod as M
+import DB.Internal.PropertyMethodMap as MP
 
 data Problem = Problem {
-      problemID :: Maybe Integer
-    , problemTitle :: String
-    , problemContent :: String
-    , problemAnswerCount :: Integer
-    , problemSolvedByUser :: Bool
-}
+      id           :: Maybe Integer
+    , title        :: Maybe String
+    , content      :: Maybe String
+    , answerCount  :: Maybe Integer
+    , solvedByUser :: Maybe ID
+    , prev         :: Maybe Integer
+    , next         :: Maybe Integer
+    , userSolution :: Maybe String
+} deriving (Generic, Show)
 
-defaultProblem :: Problem
-defaultProblem = Problem {
-      problemID = Nothing
-    , problemTitle = "Empty"
-    , problemContent = "Empty"
-    , problemAnswerCount = 0
-    , problemSolvedByUser = False
-}
-
-instance JSON Problem
-
-newProblem :: IConnection c => Problem -> c -> IOMaybe ID
-newProblem problem conn = do
-    stmt <- prepare conn "INSERT INTO Problem (title, content, answerCount) VALUES (?,?,?)"
-    execute stmt [ 
-              toSql $ problemTitle problem
-            , toSql $ problemContent problem
-            , toSql $ problemAnswerCount problem 
-        ]
-    commit conn
-    fmap (fromSql.head.head) $ quickQuery conn "SELECT last_insert_rowid();" []
-
-getByProblemID :: (Convertible SqlValue b, IConnection c) => ID -> ColumnName -> c -> IOMaybe b
-getByProblemID id = getByID id "Problem"
-
-getProblemByID :: IConnection c => ID -> c -> IOMaybe Problem
-getProblemByID id conn = do
-    maybeTitle <- getByProblemID id "title" conn
-    if (maybeTitle == Nothing) then return Nothing
-    else do
-        (Just title) <- return maybeTitle
-        (Just content) <- getByProblemID id "content" conn
-        (Just answerCount) <- getByProblemID id "answerCount" conn
-        return $ Just $ defaultProblem {
-                  problemID = Just id
-                , problemTitle = title
-                , problemContent = content
-                , problemAnswerCount = answerCount
-            }
-            
-getProblem :: IConnection c => ID -> c -> IO (Maybe [(ColumnName,String)])
-getProblem pid conn = do
-    prev <- prevID pid "Problem" conn
-    next <- nextID pid "Problem" conn
-    prb <- getOne pid "Problem" ["id","title","content","answerCount"] conn
-    return $ maybe Nothing
-        (Just . ([("next", maybe "" show next), ("prev", maybe "" show prev)] ++)) 
-        prb
-            
-getUserSolutions :: IConnection c => ID -> Pagination -> c -> IO [[(ColumnName,String)]]
-getUserSolutions uid pag conn = join $ fmap sequence $ (fmap.fmap) lambda $ fmap fst $ getAllProblems pag conn
-    where
-        lambda assoc = do
-            let (Just pid) = lookup "id" assoc
-            bool <- userSolvedProblem uid (read pid) conn
-            return $ ("solvedByUser", JSON.encode bool) : assoc
-
-getUserSolution :: IConnection c => ID -> ID -> c -> IOMaybe [(ColumnName,String)]
-getUserSolution uid pid conn = do
-    bool <- userSolvedProblem uid pid conn
-    prob <- getProblem pid conn
-    return $ fmap (("solvedByUser", JSON.encode bool):) prob
+instance FromJSON Problem
+instance ToJSON Problem
+instance Model Problem
     
-newUserSolution :: IConnection c => ID -> ID -> c -> IO ID
-newUserSolution uid pid = new "UserSolution" ["userID", "problemID"] [toSql uid, toSql pid]
+data UserSolution = UserSolution {
+      problemID :: Integer
+    , userID :: Integer
+} deriving (Generic, Show)
 
-userSolvedProblem :: IConnection c => ID -> ID -> c -> IO Bool    
-userSolvedProblem uid pid conn = hasPair "UserSolution" ("userID", "problemID") (uid, pid) conn
+instance FromJSON UserSolution
+instance ToJSON UserSolution
+instance Model UserSolution
+    
+problem :: Problem
+problem = Problem {
+      id = Nothing
+    , title = Nothing
+    , content = Nothing
+    , answerCount = Nothing
+    , solvedByUser = Nothing
+    , prev = Nothing
+    , next = Nothing
+    , userSolution = Nothing 
+}
 
-getAllProblems :: IConnection c => Pagination -> c -> IO ([[(ColumnName,String)]], Pagination)
-getAllProblems pag conn = getAll "Problem" ["id","title","content","answerCount"] pag conn 
+defaultSaveProblem :: SaveMethods Problem
+defaultSaveProblem = MP.insertInto "Problem" ["title", "content", "answerCount"]
+
+defaultGetProblemByID :: ID -> GetMethods Problem
+defaultGetProblemByID id = newGetMethods $ 
+    [     M.selectID id "Problem" ["id","title","content","answerCount"] 
+        , M.prevID id "Problem" ["prev"] 
+        , M.nextID id "Problem" ["next"] 
+    ]
+    
+newProblem :: Problem -> ConnEither ID
+newProblem p = save p defaultSaveProblem
+
+getProblemByID :: ID -> ConnEither Problem
+getProblemByID id = liftM head $ get $ defaultGetProblemByID id
+            
+            
+problemWithUserSolution :: ID -> ID -> ConnEither Problem
+problemWithUserSolution usr pid = do 
+    a <- get $ defaultGetProblemByID pid
+    b <- get $ f [toSql usr, toSql pid]
+    return $ extend (head a) (head b)
+    where
+        f p = newGetMethods [ newGetMethod ["solvedByUser"] (Q.selectWhere "userID = ? AND problemID = ?" "UserSolution" ["id"]) p ]
+
+main = do
+    conn <- connectSqlite3 "../../db.sqlite"
+    t <- runExceptT $ runReaderT (getProblems (Pagination (Just 1) (Just 10) Nothing)) conn
+    print (fmap (length.fst) t)
+    print t
+    
+--getSolvedProblems :: ID -> Pagination -> Conn ([Problem], Pagination)
+--getSolvedProblems uid pag = dbAll ByUser
+    
+--newUserSolution :: ID -> ID -> Conn ID
+--newUserSolution uid pid = dbReplace (UserSolution uid pid)
+
+--userSolvedProblem :: ID -> ID -> Conn Bool    
+--userSolvedProblem uid pid = hasPair "UserSolution" ("userID", "problemID") (uid, pid)
+
+defaultGetProblems :: Pagination -> GetMethods Problem
+defaultGetProblems pag = newGetMethods [
+        M.selectP pag "Problem" ["id","title","content","answerCount"] 
+    ]
+
+getProblems :: Pagination -> ConnEither ([Problem], Pagination)
+getProblems pag = do 
+    problems <- get $ defaultGetProblems pag
+    pagi <- getTotal pag "Problem"
+    return (problems, pagi)
+    
 

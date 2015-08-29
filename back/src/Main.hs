@@ -1,6 +1,5 @@
 module Main where
 
-import Happstack.Lite
 import Text.Blaze.Html (preEscapedToHtml)
 import Data.Text
 import Happstack.Server (askRq, ServerMonad(..), rqUri, dirs, badRequest, readCookieValue, anyPath)
