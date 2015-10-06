@@ -7,12 +7,18 @@ import DB.Internal.Query as Q
 import DB.Internal.Class
 import Database.HDBC (SqlValue)
 
-data GetMethods a = GetMethods [GetMethod]
-data SaveMethods a = SaveMethods [SaveMethod]
+data GetMethods a = GetMethods [GetMethod] deriving (Show)
+data SaveMethods a = SaveMethods [SaveMethod] deriving (Show)
 
 class GetMethodsC m where
     newGetMethods :: [GetMethod] -> m a
     getGetMethods :: m a -> [GetMethod]
+
+    selectWhere :: WhereClause -> TableName -> [PropertyName] -> [SqlValue] -> m a
+    selectWhere w tb ls sqlvs = newGetMethods [M.selectWhere w tb ls sqlvs]
+
+    selectID :: ID -> TableName -> [PropertyName] -> m a
+    selectID id tb ls = newGetMethods [M.selectID id tb ls]
 
 class SaveMethodsC m where
     newSaveMethods :: [SaveMethod] -> m a
@@ -20,6 +26,9 @@ class SaveMethodsC m where
 
     insertInto :: TableName -> [PropertyName] -> m a
     insertInto tb ls = newSaveMethods [M.insertInto tb ls]
+    
+    replaceInto :: TableName -> [PropertyName] -> m a
+    replaceInto tb ls = newSaveMethods [M.replaceInto tb ls]
     
 instance SaveMethodsC SaveMethods where
     newSaveMethods = SaveMethods

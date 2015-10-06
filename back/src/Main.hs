@@ -1,8 +1,8 @@
 module Main where
 
 import Text.Blaze.Html (preEscapedToHtml)
-import Data.Text
-import Happstack.Server (askRq, ServerMonad(..), rqUri, dirs, badRequest, readCookieValue, anyPath)
+-- import Data.Text
+import Happstack.Server
 import Happstack.Server.FileServe.BuildingBlocks (guessContentType)
 import Data.Maybe (fromMaybe)
 import Control.Monad
@@ -10,33 +10,38 @@ import Control.Monad.Trans (lift)
 import DB
 import Route
 import Helper
+import Route.Internal
+import Control.Exception
 
 main :: IO ()
 main = do
     conn <- connectDB
-    serve Nothing $ msum [
-              dirs "api/v1" $ msum [
-                      dir "login" $ loginResponse conn
-                    , protectedRoutes conn
-                    , dir "register" $ register conn
-                    , dir "problems" $ problemElement conn
-                    , dir "problems" $ problemCollection conn
-                    , badRequest $ toResponse "Your request is illegal."
-                ]
-            , msum [
-                      loadResource
-                    , homePage
-                ]
-        ]
+    let withConn f = runReaderT (ready f) conn
+    simpleHTTP nullConf $ do
+        decodeBody $ defaultBodyPolicy "/tmp/" 1024 1024 1024
+        handleInternalError $ msum [
+                dirs "api/v1" $ msum $ [
+                          dir "login" $ withConn loginResponse
+                        , protectedRoutes conn
+                        , dir "register" $ withConn register
+                        , dir "problems" $ path (\pid -> withConn $ problem $ read pid)
+                        , dir "problems" $ withConn problems
+                        , badRequest $ toResponse "Your request is illegal."
+                    ]
+                , msum [
+                          loadResource
+                        , homePage
+                    ]
+            ]
 
-protectedRoutes :: IConnection c => c -> ServerPart Response
+-- protectedRoutes :: IConnection c => c -> ServerPart Response
 protectedRoutes conn = do 
-    uid <- readCookieValue "uid"
-    --token <- readCookieValue "token"
+    let withConn f = runReaderT (ready f) conn
+    usr <- guardLogin conn
     msum [
-              dir "problems" $ path (\pid -> userSolution uid (read pid) conn)
-            , dir "problems" $ userSolutions uid conn
-            , dir "compile" $ checkAnswer uid conn
+              dir "problems" $ path (\pid -> withConn $ problemWithUserSolution (read pid) usr)
+            , dir "problems" $ withConn $ problemsWithUserSolution usr 
+            , dir "compile"  $ withConn $ checkAnswer usr 
         ]
 
     
@@ -60,11 +65,10 @@ load :: String -> ServerPart Response
 load str = serveFile (asContentType (fromMaybe "text/html" $ guessContentType mimeTypes uri)) uri
     where uri = frontend str ++ if '.' `elem` str then "" else "index.html"
 
---newtype HtmlString = HtmlString {
---        getHtmlString :: String
---    } 
-    
---instance ToMessage HtmlString where
---    toContentType _ = B.pack "text/html; charset=UTF-8" 
---    toMessage = toMessage . getHtmlString 
-
+handleInternalError :: ServerPart Response -> ServerPart Response
+handleInternalError = mapServerPartT (handle f)
+    where
+        f :: SomeException -> UnWebT IO Response
+        f e = return $ Just $
+            (Left $ toResponse $ show e, filterFun (\x -> x {rsCode = 500}))
+            

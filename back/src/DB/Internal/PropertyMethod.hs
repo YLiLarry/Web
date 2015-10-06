@@ -7,7 +7,7 @@ import DB.Internal.Class
 
 type PropertyName = String
 
-data SaveMethod = SaveMethod ([PropertyName], SaveQuery)
+data SaveMethod = SaveMethod ([PropertyName], SaveQuery) deriving (Show)
 class SaveMethodC m where
     newSaveMethod :: [PropertyName] -> SaveQuery -> m
     getSaveMethod :: m -> ([PropertyName], SaveQuery) 
@@ -15,7 +15,11 @@ class SaveMethodC m where
     insertInto :: TableName -> [ColumnName] -> m
     insertInto tb cols = newSaveMethod cols $ Q.insertInto tb cols
     
-data GetMethod = GetMethod ([PropertyName], GetQuery, [SqlValue])
+    replaceInto :: TableName -> [ColumnName] -> m
+    replaceInto tb cols = newSaveMethod cols $ Q.replaceInto tb cols
+    
+    
+data GetMethod = GetMethod ([PropertyName], GetQuery, [SqlValue]) deriving (Show)
 class GetMethodC m where
     newGetMethod :: [PropertyName] -> GetQuery -> [SqlValue] -> m
     getGetMethod :: m -> ([PropertyName], GetQuery, [SqlValue]) 
@@ -24,13 +28,16 @@ class GetMethodC m where
     selectID id tb cols = newGetMethod cols (Q.selectID tb cols) [toSql id]
     
     prevID :: ID -> TableName -> [ColumnName] -> m
-    prevID id tb cols = newGetMethod cols (Q.selectPrev tb ["id"]) [toSql id]
+    prevID id tb cols = newGetMethod cols (Q.selectPrev tb ["idx"]) [toSql id]
     
     nextID :: ID -> TableName -> [ColumnName] -> m
-    nextID id tb cols = newGetMethod cols (Q.selectNext tb ["id"]) [toSql id]
+    nextID id tb cols = newGetMethod cols (Q.selectNext tb ["idx"]) [toSql id]
         
     selectP :: Pagination -> TableName -> [ColumnName] -> m
     selectP pag tb cols = newGetMethod cols (Q.selectP pag tb cols) []
+    
+    selectWhere :: WhereClause -> TableName -> [ColumnName] -> [SqlValue] -> m
+    selectWhere w tb cols = newGetMethod cols (Q.selectWhere w tb cols) 
         
 instance SaveMethodC SaveMethod where
     newSaveMethod a b = SaveMethod (a,b)

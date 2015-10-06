@@ -5,9 +5,9 @@ export default Ember.Component.extend({
         this._super();
         Ember.run.scheduleOnce('afterRender', this, function() {
             var Component = this;
-            $('body').on('login', function(event, data) {
-                Component.set('session', data);
-            });
+            // $('body').on('login', function(event, data) {
+            //     Component.set('session', data);
+            // });
             var en = Cookies.get('session');
             if (en) {
                 this.set('session', JSON.parse(en));
@@ -17,10 +17,10 @@ export default Ember.Component.extend({
     actions: {
         logout: function() {
             Cookies.remove('session', {path: '/'});
-            Cookies.remove('token', {path: '/'});
             Cookies.remove('uid', {path: '/'});
-            this.set('session','');
-            $('body').trigger('logout');
+            Cookies.remove('token', {path: '/'});
+            this.set('session', undefined);
+            // $('body').trigger('logout');
             location.reload();
         }
     }

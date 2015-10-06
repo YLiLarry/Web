@@ -2,27 +2,10 @@
 
 module DB (
       module Database.HDBC
-    , connectDB
-    , Pagination(..)
-    , ID
-    , newPagination
-    , DB(..)
-    , ConnT
-    , ConnEither
-    , ConnMaybe
-    , IConnection(..)
+    , module Data.Aeson
+    , module DB.Internal
 ) where
 
-import DB.Internal (
-          connectDB
-        , Pagination(..)
-        , ID
-        , newPagination
-        , DB(..)
-        , ConnT
-        , ConnEither
-        , ConnMaybe
-        , IConnection(..)
-    )
+import DB.Internal
 import Database.HDBC
-
+import Data.Aeson

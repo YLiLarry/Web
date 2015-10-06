@@ -1,0 +1,16 @@
+#part-register .register-content {
+    top: 10vh;
+    // background-color: $default-transparent-color;
+}
+
+#part-register .message {
+    color: $default-dim-color;    
+    line-height: 36px;
+    font-size: 0.9em;
+}
+#part-register .register-content {
+    padding: 2.5% 5%;
+}
+#part-register hr {
+    border-color: rgba(0, 0, 0, 0.05);    
+}

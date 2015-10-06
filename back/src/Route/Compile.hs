@@ -4,48 +4,51 @@ import Text.JSON as JSON (encode)
 import Happstack.Server
 import System.Process (readCreateProcessWithExitCode, proc, shell, CreateProcess(..))
 --import Data.Unique
-import Control.Monad.Trans (lift)
+import Control.Monad.Trans (lift, liftIO)
+import Control.Monad.Except
 import Control.Monad (forM_, msum)
 --import Control.Exception (catch)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing, getDirectoryContents)
 import System.Exit (ExitCode(..))
 import DB (IConnection, ID)
-import DB.Problem (newUserSolution)
+import qualified DB.Problem as P
+import qualified DB.User as U
 import System.FilePath (replaceExtension)
 import Data.Text.Lazy as T (Text, pack, unpack)
 import Data.Text.Lazy.IO as T (readFile, writeFile)
 import Data.List (isSuffixOf)
-import Route.Internal (ConnServer)
+import Route.Internal
+import Data.Maybe (fromJust)
 
 import Helper
 
 type Error         = String
 type DirectoryPath = String
 
-checkAnswer :: ID -> ConnServer Response
-checkAnswer uid conn = do
+checkAnswer :: U.User -> ConnServer String
+checkAnswer usr = do
     -- read query params
     (filePath,_,_) <- lookFile "file"
     pid <- look "problem"
     language <- look "language"
     
     -- set paths
-    wd <- lift getCurrentDirectory
+    wd <- liftIO getCurrentDirectory
     let binPath = wd ++ "/bin/" ++ language ++ "/"
     let problemPath = wd ++ "/bin/plain/q" ++ pid ++ "/"
-    let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show uid ++ "/"
+    let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show (fromJust $ U.idx usr) ++ "/"
     
-    result <- lift $ fmap msum $ sequence [
+    result <- liftIO $ fmap msum $ sequence [
               compile pid filePath binPath problemPath compilePath
             , runForEachInput problemPath compilePath
         ]
         
     case result of
         Nothing  -> do
-            lift $ newUserSolution uid (read pid) conn -- user solved solution
-            ok $ toResponse "Correct" 
+            P.saveUserSolution $ P.UserSolution (fromJust $ U.idx usr) (read pid) -- user solved solution
+            return $ "Correct" 
         Just err -> do
-            badRequest $ toResponse err
+            throwError err
         
 
 -- | Calls the "compile" binary under the language directory with the user code path, compilation path, and the problem id
@@ -59,7 +62,7 @@ compile pid filePath binPath problemPath compilePath = do
         ""
     if (exitCode == ExitSuccess) 
     then return $ Nothing
-    else return $ Just $ dropFirstLine error
+    else return $ Just $ "Error message: \n" ++ dropFirstLine error
     where
         dropFirstLine = unlines.drop 2.lines
 

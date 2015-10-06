@@ -1,12 +1,10 @@
 module Route (
-      module Route.Login
+      module Route.Auth
     , module Route.Problem
     , module Route.Compile
-    , module Route.Register
 ) where
 
-import Route.Login
+import Route.Auth
 import Route.Problem
 import Route.Compile
-import Route.Register
 

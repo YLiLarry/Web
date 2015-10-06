@@ -43,9 +43,9 @@ export default Ember.Component.extend({
                     email:    this.get('email'), 
                     password: this.get('password')
                 },
-                success: function(session) {
-                    // var sessionObj = JSON.parse(session);
-                    Cookies.set('session', session, {path: '/'});
+                success: function(resp) {
+                    var respObj = JSON.parse(resp);
+                    Cookies.set('session', respObj.user, {path: '/'});
                     // $('#part-login').modal('hide');
                     // $('body').trigger('login', sessionObj);
                     location.reload();

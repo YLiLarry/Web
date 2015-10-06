@@ -1,22 +1,24 @@
 {-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 module DB.Internal.Query where
 
 import DB.Internal.Class
 import Data.List
 import Data.Maybe
 import Database.HDBC    
-import Control.Monad.Trans.Reader
-import Control.Monad.Trans.Except
+import Control.Monad.Reader
+import Control.Monad.Except
 
 type WhereClause = String
 
 data SaveQuery = SaveQuery {
     saveQuery :: String
-}
+} deriving (Show)
     
 data GetQuery = GetQuery {
     getQuery :: String
-}
+} deriving (Show)
 
 class SaveQueryC a where
     newSaveQuery :: String -> a
@@ -33,6 +35,10 @@ class SaveQueryC a where
         
     insertInto :: TableName -> [ColumnName] -> a
     insertInto tb cols = newSaveQuery $ "INSERT INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (\_ -> "?") cols) ++ ")"
+    
+    replaceInto :: TableName -> [ColumnName] -> a
+    replaceInto tb cols = newSaveQuery $ "REPLACE INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (\_ -> "?") cols) ++ ")"
+    
     
 instance SaveQueryC SaveQuery where
     newSaveQuery = SaveQuery
@@ -51,13 +57,13 @@ class GetQueryC a where
         
         
     selectID :: TableName -> [ColumnName] -> a
-    selectID = selectWhere "id = ?"
+    selectID = selectWhere "idx = ?"
     
     selectPrev :: TableName -> [ColumnName] -> a
-    selectPrev = selectWhere "id < ? ORDER BY id ASC LIMIT 1"
+    selectPrev = selectWhere "idx < ? ORDER BY idx DESC LIMIT 1"
     
     selectNext :: TableName -> [ColumnName] -> a
-    selectNext = selectWhere "id > ? ORDER BY id DESC LIMIT 1"
+    selectNext = selectWhere "idx > ? ORDER BY idx ASC LIMIT 1"
     
     selectWhere :: WhereClause -> TableName -> [ColumnName] -> a
     selectWhere clause = select $ " WHERE " ++ clause

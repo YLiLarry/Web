@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RankNTypes #-}
 
 module DB.Problem where
@@ -12,9 +13,11 @@ import Text.JSON as JSON (encode, JSON, toJSObject)
 import DB.Internal.Query as Q
 import DB.Internal.PropertyMethod as M
 import DB.Internal.PropertyMethodMap as MP
+import DB.User (User)
+import qualified DB.User as U
 
 data Problem = Problem {
-      id           :: Maybe Integer
+      idx          :: Maybe ID
     , title        :: Maybe String
     , content      :: Maybe String
     , answerCount  :: Maybe Integer
@@ -22,16 +25,16 @@ data Problem = Problem {
     , prev         :: Maybe Integer
     , next         :: Maybe Integer
     , userSolution :: Maybe String
-} deriving (Generic, Show)
+} deriving (Generic, Show, Typeable)
 
 instance FromJSON Problem
 instance ToJSON Problem
 instance Model Problem
     
 data UserSolution = UserSolution {
-      problemID :: Integer
-    , userID :: Integer
-} deriving (Generic, Show)
+      problemID :: ID
+    , userID    :: ID
+} deriving (Generic, Show, Typeable)
 
 instance FromJSON UserSolution
 instance ToJSON UserSolution
@@ -39,7 +42,7 @@ instance Model UserSolution
     
 problem :: Problem
 problem = Problem {
-      id = Nothing
+      idx = Nothing
     , title = Nothing
     , content = Nothing
     , answerCount = Nothing
@@ -48,56 +51,50 @@ problem = Problem {
     , next = Nothing
     , userSolution = Nothing 
 }
+    
+newProblem :: (FromConnEither m) => Problem -> m ID
+newProblem p = save p $ MP.insertInto "Problem" ["title", "content", "answerCount"]
 
-defaultSaveProblem :: SaveMethods Problem
-defaultSaveProblem = MP.insertInto "Problem" ["title", "content", "answerCount"]
-
-defaultGetProblemByID :: ID -> GetMethods Problem
-defaultGetProblemByID id = newGetMethods $ 
-    [     M.selectID id "Problem" ["id","title","content","answerCount"] 
+getProblemByID :: (FromConnEither m) => ID -> m Problem
+getProblemByID id = getOne $ newGetMethods
+    [     M.selectID id "Problem" ["idx","title","content","answerCount"] 
         , M.prevID id "Problem" ["prev"] 
         , M.nextID id "Problem" ["next"] 
     ]
     
-newProblem :: Problem -> ConnEither ID
-newProblem p = save p defaultSaveProblem
-
-getProblemByID :: ID -> ConnEither Problem
-getProblemByID id = liftM head $ get $ defaultGetProblemByID id
-            
-            
-problemWithUserSolution :: ID -> ID -> ConnEither Problem
-problemWithUserSolution usr pid = do 
-    a <- get $ defaultGetProblemByID pid
-    b <- get $ f [toSql usr, toSql pid]
-    return $ extend (head a) (head b)
-    where
-        f p = newGetMethods [ newGetMethod ["solvedByUser"] (Q.selectWhere "userID = ? AND problemID = ?" "UserSolution" ["id"]) p ]
-
-main = do
-    conn <- connectSqlite3 "../../db.sqlite"
-    t <- runExceptT $ runReaderT (getProblems (Pagination (Just 1) (Just 10) Nothing)) conn
-    print (fmap (length.fst) t)
-    print t
-    
---getSolvedProblems :: ID -> Pagination -> Conn ([Problem], Pagination)
---getSolvedProblems uid pag = dbAll ByUser
-    
---newUserSolution :: ID -> ID -> Conn ID
---newUserSolution uid pid = dbReplace (UserSolution uid pid)
-
---userSolvedProblem :: ID -> ID -> Conn Bool    
---userSolvedProblem uid pid = hasPair "UserSolution" ("userID", "problemID") (uid, pid)
-
-defaultGetProblems :: Pagination -> GetMethods Problem
-defaultGetProblems pag = newGetMethods [
-        M.selectP pag "Problem" ["id","title","content","answerCount"] 
+setSolvedByUser :: User -> Problem -> GetMethods Problem
+setSolvedByUser usr prb = newGetMethods 
+    [ newGetMethod 
+        ["solvedByUser"] 
+        (Q.selectWhere "userID = ? AND problemID = ?" "UserSolution" ["idx"]) 
+        [ toSql (U.idx usr), toSql (idx prb) ] 
     ]
+        
 
-getProblems :: Pagination -> ConnEither ([Problem], Pagination)
-getProblems pag = do 
-    problems <- get $ defaultGetProblems pag
-    pagi <- getTotal pag "Problem"
-    return (problems, pagi)
+setPrevNextID :: Problem -> GetMethods Problem
+setPrevNextID p = newGetMethods 
+        [     M.nextID (fromJust $ idx p) "Problem" ["next"] 
+            , M.prevID (fromJust $ idx p) "Problem" ["prev"] 
+        ]
+
+saveUserSolution :: (FromConnEither m) => UserSolution -> m ID
+saveUserSolution sol = save sol $ MP.insertInto "UserSolution" ["userID", "problemID"]
+
+getProblems :: (FromResultPagination m) => Pagination -> m [Problem]
+getProblems pag =
+    getP "Problem" pag (newGetMethods [
+            M.selectP pag "Problem" ["idx","title","content","answerCount"] 
+        ])
+    >>= fromResultPagination . decroMapGetS [ setPrevNextID ]
+
+getProblemWithUserSolution :: (FromConnEither m) => ID -> User -> m Problem
+getProblemWithUserSolution pid usr = do
+    p <- getProblemByID pid
+    decroGet (setSolvedByUser usr p) p
+
+getProblemsWithUserSolution :: (FromResultPagination m) => Pagination -> User -> m [Problem]
+getProblemsWithUserSolution pag usr = 
+    getProblems pag
+    >>= fromResultPagination . decroMapGetS [ setSolvedByUser usr ]
     
-
+-- saveProblem :: UserSolution -> 
