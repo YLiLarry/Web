@@ -1,6 +1,9 @@
 @import "variables";
 
 @import "app/pods/problem/style";
+@import "app/pods/problem/single/view/style";
 @import "app/pods/problem/single/edit/style";
 @import "app/pods/components/part-login/style";
 @import "app/pods/components/part-register/style";
+@import "app/pods/components/input-group-highlight/style";
+@import "bower_components/bootstrap/scss/_variables";

@@ -12,7 +12,8 @@
     "jquery": "^1.11.3",
     "loader.js": "ember-cli/loader.js#3.2.1",
     "qunit": "~1.18.0",
-    "pagedown": "~1.1.0"
+    "pagedown": "~1.1.0",
+    "bootstrap": "v4.0.0-alpha"
   },
   "devDependencies": {
     "bootstrap": "~3.3.5",

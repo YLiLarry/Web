@@ -12,7 +12,7 @@ module.exports = function(defaults) {
   // app.import('bower_components/bootstrap/dist/css/bootstrap.css.map', {
   //     destDir: "assets"
   // });
-  app.import('bower_components/bootstrap/dist/css/bootstrap-theme.css');
+  // app.import('bower_components/bootstrap/dist/css/bootstrap-theme.css');
   // app.import('bower_components/bootstrap/dist/css/bootstrap-theme.css.map', {
   //     destDir: "assets"
   // });

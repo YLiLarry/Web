@@ -1,17 +1,6 @@
 @import "pods.scss";
 
-.input-group {
-    background-color: #eee;
-    border: 1px solid #ddd;
-}
-.input-group .form-control,
-.input-group .input-group-addon {
-    border: none;
-}
-.input-group.focused {
-    border-color: $primary-color;
-    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-}
+
 * {
   box-shadow: none !important;
 }

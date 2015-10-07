@@ -1,94 +1,98 @@
-#problems .sidebar {
-    // width: 15%;
-    position: fixed;
-    padding-left: 1%;
-}
+#problems {
+    
+    .sidebar {
+        width: 9%;
+        position: fixed;
+        /*// padding: 0.5%;*/
+    }
 
-#problems .sidebar .list-group-item {
-    border: none;
-    border-left: 5px solid transparent;
-    padding: 0.5em 2em 0.5em 1.5em; 
-}
+    .sidebar .list-group-item {
+        border: 5px solid transparent;
+        /*// padding: 10px 50px 10px 45px;*/
+        text-align: center; 
+        vertical-align: middle;
+    }
 
-#problems .list-group-item.active {
-    border-left: 5px solid $brand-info;
-    background-color: initial;
-    color: $brand-info;
-    background-image: none;
-    text-shadow: none;
-}
+    .list-group-item.active {
+        border-left: 5px solid $brand-info;
+        background-color: initial;
+        color: $brand-info;
+        background-image: none;
+        text-shadow: none;
+    }
 
-#problems .content {
-    padding: 0 3% 4% 1%;
-    // width: 85%;
-}
+    .content {
+        padding: 0 2% 0 0;
+        width: 90.5%;
+    }
 
-#problems .problem {
-    display: inline-block;
-    border: 1px solid $gray-lighter;
-    position: relative;
-    width: 16%;
-    overflow: hidden;
-}
+    .problem {
+        display: inline-block;
+        border: 1px solid $gray-lighter;
+        position: relative;
+        width: 16%;
+        overflow: hidden;
+    }
 
-#problems .problem .thumbnail {
-    width: 100%;
-    margin: 0;
-    // -webkit-filter: blur(1px);
-    // filter: blur(1px);
-}
+    .problem .thumbnail {
+        width: 100%;
+        margin: 0;
+        /*// -webkit-filter: blur(1px);*/
+        /*// filter: blur(1px);*/
+    }
 
-#problems .problem .lock {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75);
-    z-index: 99;
-}
+    .problem .lock {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.75);
+        z-index: 99;
+    }
 
-#problems .icon {
-    // margin-left: 0.5em;
-    margin-right: 0.25em;
-}
+    .icon {
+        // margin-left: 0.5em;
+        margin-right: 0.25em;
+    }
 
-#problems .problem .lock .icon {
-    position: absolute;
-    top: 40%;
-    left: 40%;
-    font-size: 40px;
-    color: #666;
-}
+    .problem .lock .icon {
+        position: absolute;
+        top: 40%;
+        left: 40%;
+        font-size: 40px;
+        color: #666;
+    }
 
-#problems .problem .caption {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 30px;
-    padding: 5px 10px;
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.75);
-}
-#problems .problem.solved-by-user .caption {
-    background-color: $brand-success;
-    opacity: 0.9;
-}
+    .problem .caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        padding: 5px 10px;
+        color: #fff;
+        background-color: rgba(0, 0, 0, 0.75);
+    }
+    .problem.solved-by-user .caption {
+        background-color: $brand-success;
+        opacity: 0.9;
+    }
 
-#problems .problem .title {
-    margin: 0;    
-    line-height: 25px;
-    border-bottom: 1px solid #fff;
-    margin-bottom: 10px;
-}
+    .problem .title {
+        margin: 0;    
+        line-height: 25px;
+        border-bottom: 1px solid #fff;
+        margin-bottom: 10px;
+    }
 
-#problems .problem:hover .caption {
-    top: 0;
-    height: initial;
-}
+    .problem:hover .caption {
+        top: 0;
+        height: initial;
+    }
 
-#problems .problem a {
-    color: #fff;
-    cursor: pointer;
+    .problem a {
+        color: #fff;
+        cursor: pointer;
+    }
 }

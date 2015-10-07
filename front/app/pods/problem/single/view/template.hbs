@@ -1,54 +1,56 @@
-<h4>
-    {{#if model.title}}
-        {{model.title}}
-    {{else}}
-        并没有什么标题
-    {{/if}}
-</h4>
-<div>
-    {{#if model.prev}} <small> {{#link-to 'problem.single.view' model.prev}} 上一题 {{/link-to}} </small> {{/if}}
-    {{#if model.next}} <small> {{#link-to 'problem.single.view' model.next}} 下一题 {{/link-to}} </small> {{/if}}
-</div>
-<hr>
-<article>
-    {{#if model.content}}
-        {{model.content}}
-    {{else}}
-        文章是空哒 ~(￣▽￣)~
-    {{/if}}
-</article>
-<hr>
-{{#if model.solvedByUser}}
-<div class="alert alert-warning">
-    <strong> 答案正确 </strong>
-    <p> 恭喜你答对了这道题 </p>
-</div>
-<hr>
-{{/if}}
-<!-- <h5> 小队 </h5>
-<div> 您可以独自解题，或者 <a> 邀请好友组队 </a> </div>
-<hr> -->
-<div class="upload">
-    <div class="form">
-        <div class="form-group">
-            <label for="file-upload" class="btn btn-primary"> 上传代码 </label>
-            {{#if filename}}
-            <span>
-                <i class="glyphicon glyphicon-console"></i>
-                {{filename}}
-            </span>
-            {{/if}}
-            <button class="btn btn-danger pull-right" {{action 'uploadFile'}}> 运行 </button>
-        </div>
-        <div class="form-group">
-            <textarea id="file-content" rows="8" class="form-control" placeholder="把代码粘贴到这里运行"></textarea>
-        </div>
-        <input id="file-upload" name="hsfile" type="file" class="hidden">
+<div id="problem-single-view">
+    <h4>
+        {{#if model.title}}
+            {{model.title}}
+        {{else}}
+            并没有什么标题
+        {{/if}}
+    </h4>
+    <div>
+        {{#if model.prev}} <small> {{#link-to 'problem.single.view' model.prev}} 上一题 {{/link-to}} </small> {{/if}}
+        {{#if model.next}} <small> {{#link-to 'problem.single.view' model.next}} 下一题 {{/link-to}} </small> {{/if}}
     </div>
+    <hr>
+    <article>
+        {{#if model.content}}
+            {{model.content}}
+        {{else}}
+            文章是空哒 ~(￣▽￣)~
+        {{/if}}
+    </article>
+    <hr>
+    {{#if model.solvedByUser}}
+    <div class="alert alert-warning">
+        <strong> 答案正确 </strong>
+        <p> 恭喜你答对了这道题 </p>
+    </div>
+    <hr>
+    {{/if}}
+    <!-- <h5> 小队 </h5>
+    <div> 您可以独自解题，或者 <a> 邀请好友组队 </a> </div>
+    <hr> -->
+    <div class="upload">
+        <div class="form">
+            <div class="form-group">
+                <label for="file-upload" class="btn btn-primary"> 上传代码 </label>
+                {{#if filename}}
+                <span>
+                    <i class="glyphicon glyphicon-console"></i>
+                    {{filename}}
+                </span>
+                {{/if}}
+                <button class="btn btn-danger pull-right" {{action 'uploadFile'}}> 运行 </button>
+            </div>
+            <div class="form-group">
+                <textarea id="file-content" rows="8" class="form-control" placeholder="把代码粘贴到这里运行"></textarea>
+            </div>
+            <input id="file-upload" name="hsfile" type="file" class="hidden">
+        </div>
+    </div>
+    {{#if response}}
+    <div class="result {{if answerCorrent 'correct' 'wrong'}}">
+        <h5> 运行结果 </h5>
+        <pre>{{response}}</pre>
+    </div>
+    {{/if}}
 </div>
-{{#if response}}
-<div class="result {{if answerCorrent 'correct' 'wrong'}}">
-    <h5> 运行结果 </h5>
-    <pre>{{response}}</pre>
-</div>
-{{/if}}

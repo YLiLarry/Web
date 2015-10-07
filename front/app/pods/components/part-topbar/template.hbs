@@ -1,20 +1,29 @@
-<nav class="navbar navbar-default navbar-fixed-top container-fluid">
-    <a href="/" class="navbar-text">
+<nav class="navbar navbar-light navbar-fixed-top bg-faded">
+    <a href="/" class="navbar-brand">
         Haskell题库
     </a>
-    {{#if session}}
-        <span class="navbar-text"> 欢迎回来, {{session.name}} </span>
-        <a class="navbar-text pull-right" {{action 'logout'}}>
-            退出登录
-        </a>
-    {{else}}
-        <a href="#" class="navbar-text pull-right" data-toggle="modal" data-target="#part-login">
-            注册
-        </a>
-        <a href="#" class="navbar-text pull-right" data-toggle="modal" data-target="#part-login">
-            登录
-        </a>
-    {{/if}}
+    <ul class="nav navbar-nav">
+        {{#if session}}
+            <li class="nav-item pull-right">
+                <span class="navbar-text"> 欢迎回来, {{session.name}} </span>
+                <a class="nav-link" {{action 'logout'}}>
+                    退出登录
+                </a>
+            </li>
+        {{else}}
+            <li class="nav-item pull-right">
+                <a href="#" class="nav-link" data-toggle="modal" data-target="#part-login">
+                    登录
+                </a>
+            </li>
+            <li class="navbar-divider pull-right"></li>
+            <li class="nav-item pull-right">
+                <a href="#" class="nav-link" data-toggle="modal" data-target="#part-login">
+                    注册
+                </a>
+            </li>
+        {{/if}}
+    </ul>
 </nav>
 
 {{#part-login}}{{/part-login}}

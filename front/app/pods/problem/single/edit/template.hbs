@@ -1,11 +1,37 @@
 <div id="problem-single-edit">
     
-    <div id="markdown">
-        {{textarea value=markdownText key-up="updateMarkdown"}}
+    <div id="edit">
+        
+        <fieldset class="form-group">
+            {{input value=title key-up="updateTitle" class="form-control" id="title" placeholder="输入标题"}}
+        </fieldset>
+        
+        <fieldset class="form-group" id="markdown">
+            {{textarea class="form-control" value=markdownText key-up="updateMarkdown" rows="20" placeholder="输入文章内容"}}
+        </fieldset>
+        
+        {{outlet}}
+        
     </div>
 
     <div id="preview">
-        {{{previewText}}}
+        <h5 id="preview-title">
+            <strong>
+                {{#if title}}
+                    {{{title}}}        
+                {{else}}
+                    没有标题
+                {{/if}}
+            </strong>
+        </h5>
+        <hr>
+        <div id="preview-body">
+            {{#if previewText}}
+                {{{previewText}}}        
+            {{else}}
+                空内容
+            {{/if}}
+        </div>
     </div>
     
 </div>
