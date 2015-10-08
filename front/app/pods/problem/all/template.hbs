@@ -1,36 +1,53 @@
-<ul id="freewall" class="list-unstyled">
-    {{#each model as |problem|}}
-    <li class="problem {{if problem.solvedByUser 'solved-by-user'}}"> 
-        <div class="caption">
-            <h5 class="title"> 
-                {{#link-to "problem.single.view" problem.id}}
-                    {{ problem.id }} {{ problem.title }} 
-                {{/link-to}}
-            </h5>
-            <div class="detail">
-                <p>
-                    <i class="icon glyphicon glyphicon-globe"></i>
-                    共有 {{ problem.answerCount }} 人答对
-                </p>
-<!--                 <p>
-                    <i class="icon glyphicon glyphicon-exclamation-sign"></i>
-                    {{#if problem.friendSolutionCount}}
-                        有 {{ problem.friendSolutionCount }} 个好友答对
-                    {{else}}
-                        还没有好友答对
-                    {{/if}}
-                </p>
-                <a class="text-default">
-                    <i class="icon glyphicon glyphicon-share"></i>
-                    邀请组队解题
-                </a> -->
+<div>
+    <div id="toolbar">
+        <div class="btn-group">
+            <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                显示: {{#if compactView}} 列表 {{else}} 简介 {{/if}}
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" {{action "setCompactView" true}}>
+                    列表
+                </a>
+                <a class="dropdown-item" {{action "setCompactView" false}}>
+                    简介
+                </a>
             </div>
         </div>
-<!--                 <div class="lock">
-            <i class="icon glyphicon glyphicon-lock"></i>
-        </div> -->
-        <img class="thumbnail" src="{{problem.thumbnail}}">
-    </li> 
-    {{/each}}
-    {{part-pagination total=total}}
-</ul>
+    </div>
+    <ul id="freewall" class="list-unstyled">
+        {{#each model as |problem|}}
+        <li class="problem {{if problem.solvedByUser 'solved-by-user'}} {{if compactView 'compact-view' 'thumbnail-view'}}"> 
+            <div class="caption">
+                <h5 class="title"> 
+                    {{#link-to "problem.single.view" problem.id}}
+                        {{ problem.id }} {{ problem.title }} 
+                    {{/link-to}}
+                </h5>
+                <div class="detail">
+                    <p>
+                        <i class="icon glyphicon glyphicon-globe"></i>
+                        共有 {{ problem.answerCount }} 人答对
+                    </p>
+    <!--                 <p>
+                        <i class="icon glyphicon glyphicon-exclamation-sign"></i>
+                        {{#if problem.friendSolutionCount}}
+                            有 {{ problem.friendSolutionCount }} 个好友答对
+                        {{else}}
+                            还没有好友答对
+                        {{/if}}
+                    </p>
+                    <a class="text-default">
+                        <i class="icon glyphicon glyphicon-share"></i>
+                        邀请组队解题
+                    </a> -->
+                </div>
+            </div>
+    <!--                 <div class="lock">
+                <i class="icon glyphicon glyphicon-lock"></i>
+            </div> -->
+            <img class="thumbnail" src="{{problem.thumbnail}}">
+        </li> 
+        {{/each}}
+        {{part-pagination current=page total=total}}
+    </ul>
+</div>

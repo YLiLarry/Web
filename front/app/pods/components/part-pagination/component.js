@@ -2,14 +2,11 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
     actions: {
-        changePage: function(current) {
-            this.set('current', current);
+        changePage: function() {
+            // this.set('current', current);
             window.scrollTo(0,0);
         }
     },
-    current: Ember.computed(function() {
-        return 1;
-    }),
     pageArr: Ember.computed('total','current', function() {
         var current = this.get('current');
         var total = this.get('total');
