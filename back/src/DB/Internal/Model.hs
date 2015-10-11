@@ -15,7 +15,7 @@ import DB.Internal.Class
 import DB.Internal.Query as Query
 import Data.Aeson as A (ToJSON(..), Result(..), Value(..), FromJSON(..), fromJSON, object, (.=), decode)
 import Data.Aeson.Encode (encodeToTextBuilder)
-import qualified Data.Map as M (Map(..), fromList, unionWith, lookup)
+import qualified Data.Map as M (Map(..), fromList, unionWith, lookup, delete)
 import qualified Data.HashMap.Strict as HM (map, toList)
 import Control.Monad (foldM)
 import Control.Monad.Trans (liftIO)
@@ -89,7 +89,7 @@ instance ToModel String where
 class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
     
     decroGet :: (FromConnEither m) => GetMethods a -> a -> m a
-    decroGet b o = fromConnEither $ do
+    decroGet b o = do
         e <- getOne b
         return $ extend o e
         
@@ -101,9 +101,9 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
         ls <- lsM 
         mapM f ls 
         
-    decroEachGet :: (FromConnEither m) => (a -> GetMethods a) -> ConnEither [a] -> m [a]
-    decroEachGet f m = fromConnEither $ do
-        objs <- m 
+    decroEachGet :: (FromConnEither m) => (a -> GetMethods a) -> m [a] -> m [a]
+    decroEachGet f m = do
+        objs <- m
         decroMapGet f objs
     
     decroMapGet :: (FromConnEither m) => (a -> GetMethods a) -> [a] -> m [a]
@@ -121,28 +121,28 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
             nonNull x y    = y
     
     save :: (SaveResult r, FromConnEither m) => a -> SaveMethods a -> m r
-    save obj ls = fromConnEither $ do
+    save obj ls = do
         v <- return $ fromModel obj
-        xs <- mapM (f v) $ getSaveMethods ls
+        xs <- mapM (f v) $ unSaveMethods ls
         return $ fromList $ concat xs
         where
-            f :: M.Map PropertyName SqlValue -> SaveMethod -> ConnEither [(PropertyName, ID)]
+            f :: FromConnEither m => M.Map PropertyName SqlValue -> SaveMethod -> m [(PropertyName, ID)]
             f al sm = do
-                let (properties, method) = getSaveMethod sm
+                let (properties, method) = unSaveMethod sm
                 id <- runSaveQuery method [ fromJust $ M.lookup x al | x <- properties ]
                 return [ (x, id) | x <- properties ]
 
     get :: (FromConnEither m) => GetMethods a -> m [a]
-    get ls = fromConnEither $ do 
-        allAL <- foldM f (Right $ repeat []) $ getGetMethods ls
+    get ls = do 
+        allAL <- foldM f (Right $ repeat []) $ unGetMethods ls
         case allAL of 
             Left  ls -> return $ map toModel ls
             Right ls -> return $ map toModel ls
         
         where
-            f :: Either [[SqlValue]] [[(PropertyName, SqlValue)]] -> GetMethod -> ConnEither (Either [[SqlValue]] [[(PropertyName, SqlValue)]])
+            f :: FromConnEither m => Either [[SqlValue]] [[(PropertyName, SqlValue)]] -> GetMethod -> m (Either [[SqlValue]] [[(PropertyName, SqlValue)]])
             f (Right acc) gm = do
-                let (properties, method, sqlVs) = getGetMethod gm
+                let (properties, method, sqlVs) = unGetMethod gm
                 vals <- runGetQuery method sqlVs
                 if null properties then return $ Left $ zipWith (++) (dropFirstField acc) vals 
                 else 
@@ -150,7 +150,7 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
                         []   -> return $ Right $  acc
                         vals -> return $ Right $ zipWith (++) acc [ zip properties x | x <- vals ]
             f (Left acc) gm = do
-                let (_, method, sqlVs) = getGetMethod gm
+                let (_, method, sqlVs) = unGetMethod gm
                 vals <- runGetQuery method sqlVs
                 case vals of
                     []   -> return $ Left $ acc
@@ -168,12 +168,23 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
     
     getP :: FromResultPagination m => TableName -> Pagination -> GetMethods a -> m [a]
     getP tb pag m = fromResultPagination $ do
-        objs <- fromConnEither $ get m
-        pagi <- fromConnEither $ getTotal tb pag
+        objs <- get m
+        pagi <- getTotal tb pag
         tell $ Meta pagi
         return objs
         
-    --delete :: DelMethod l => a -> ConnEither ID
+    -- delete :: FromConnEither m => a -> DelMethods l -> m a
+    -- delete obj delMs = fromConnEither $ do
+    --     let ls = fromModel obj :: M.Map PropertyName Value
+    --     let delMLs = unDelMethods delMs
+    --     propNmLs <- fmap concat $ mapM (f . unDelMethod) delMLs
+    --     return $ toModel $ foldr M.delete ls propNmLs
+    --     where
+    --         f (propNames, delQuery, sqlVs) = do
+    --             runDelQuery delQuery sqlVs
+    --             return propNames
+        
+                
 
 data Meta a = NoMeta | Meta a deriving (Show, Functor)
 
@@ -214,7 +225,7 @@ instance Model Pagination
 instance Model Int
 instance Model a => Model [(String, a)]
 
-getTotal :: TableName -> Pagination -> ConnEither Pagination
+getTotal :: FromConnEither m => TableName -> Pagination -> m Pagination
 getTotal tb pag = do
     pag <- flip decroGet pag $ newGetMethods [ newGetMethod ["total"] (newGetQuery $ "SELECT COUNT(*) FROM " ++ tb) [] ]
     return $ pag { 

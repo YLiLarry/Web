@@ -97,4 +97,4 @@ getProblemsWithUserSolution pag usr =
     getProblems pag
     >>= fromResultPagination . decroMapGetS [ setSolvedByUser usr ]
     
--- saveProblem :: UserSolution -> 
+-- deleteProblem :: Problem -> 

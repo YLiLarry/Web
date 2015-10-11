@@ -4,13 +4,19 @@ module DB.Internal.PropertyMethod where
 import Database.HDBC
 import DB.Internal.Query as Q
 import DB.Internal.Class
+import Data.Maybe (fromJust)
 
 type PropertyName = String
 
 data SaveMethod = SaveMethod ([PropertyName], SaveQuery) deriving (Show)
 class SaveMethodC m where
     newSaveMethod :: [PropertyName] -> SaveQuery -> m
-    getSaveMethod :: m -> ([PropertyName], SaveQuery) 
+    unSaveMethod :: m -> ([PropertyName], SaveQuery) 
+    
+    runSaveMethod :: FromConnEither n => m -> [(PropertyName, SqlValue)] -> n ID
+    runSaveMethod ms sqlVs = runSaveQuery saveQ [ fromJust $ lookup prop sqlVs | prop <- props ]
+        where
+            (props, saveQ) = unSaveMethod ms
 
     insertInto :: TableName -> [ColumnName] -> m
     insertInto tb cols = newSaveMethod cols $ Q.insertInto tb cols
@@ -18,11 +24,17 @@ class SaveMethodC m where
     replaceInto :: TableName -> [ColumnName] -> m
     replaceInto tb cols = newSaveMethod cols $ Q.replaceInto tb cols
     
-    
 data GetMethod = GetMethod ([PropertyName], GetQuery, [SqlValue]) deriving (Show)
 class GetMethodC m where
     newGetMethod :: [PropertyName] -> GetQuery -> [SqlValue] -> m
-    getGetMethod :: m -> ([PropertyName], GetQuery, [SqlValue]) 
+    unGetMethod :: m -> ([PropertyName], GetQuery, [SqlValue]) 
+
+    runGetMethod :: FromConnEither n => m -> n [[(PropertyName, SqlValue)]]
+    runGetMethod ms = do
+        result <- runGetQuery query sqlVs
+        return $ [ zip props r | r <- result ]
+        where
+            (props, query, sqlVs) = unGetMethod ms
 
     selectID :: ID -> TableName -> [ColumnName] -> m
     selectID id tb cols = newGetMethod cols (Q.selectID tb cols) [toSql id]
@@ -41,9 +53,24 @@ class GetMethodC m where
         
 instance SaveMethodC SaveMethod where
     newSaveMethod a b = SaveMethod (a,b)
-    getSaveMethod (SaveMethod v) = v
+    unSaveMethod (SaveMethod v) = v
 
 instance GetMethodC GetMethod where
     newGetMethod a b c = GetMethod (a,b,c)
-    getGetMethod (GetMethod v) = v
+    unGetMethod (GetMethod v) = v
+    
+data DelMethod = DelMethod (DelQuery, [SqlValue]) deriving (Show)
+class DelMethodC m where
+    newDelMethod :: DelQuery -> [SqlValue] -> m
+    unDelMethod :: m -> (DelQuery, [SqlValue]) 
+    
+    runDelMethod :: FromConnEither n => m -> n ()
+    runDelMethod m = runDelQuery delQuery sqlVs
+        where
+            (delQuery, sqlVs) = unDelMethod m
+        
+    
+instance DelMethodC DelMethod where
+    newDelMethod query vals = DelMethod (query, vals)
+    unDelMethod (DelMethod x) = x
     

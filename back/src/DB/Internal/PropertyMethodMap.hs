@@ -6,14 +6,22 @@ import DB.Internal.PropertyMethod as M
 import DB.Internal.Query as Q
 import DB.Internal.Class
 import Database.HDBC (SqlValue)
+import Control.Monad (void)
+import Data.List (transpose)
 
-data GetMethods a = GetMethods [GetMethod] deriving (Show)
-data SaveMethods a = SaveMethods [SaveMethod] deriving (Show)
+newtype GetMethods a = GetMethods [GetMethod] deriving (Show)
+newtype SaveMethods a = SaveMethods [SaveMethod] deriving (Show)
+newtype DelMethods a = DelMethods [DelMethod] deriving (Show)
 
 class GetMethodsC m where
     newGetMethods :: [GetMethod] -> m a
-    getGetMethods :: m a -> [GetMethod]
+    unGetMethods :: m a -> [GetMethod]
 
+    runGetMethods :: FromConnEither n => m a -> n [[(PropertyName, SqlValue)]]
+    runGetMethods ms = do
+        ls <- sequence [ runGetMethod method | method <- unGetMethods ms ]
+        return $ map concat $ transpose ls
+    
     selectWhere :: WhereClause -> TableName -> [PropertyName] -> [SqlValue] -> m a
     selectWhere w tb ls sqlvs = newGetMethods [M.selectWhere w tb ls sqlvs]
 
@@ -22,7 +30,10 @@ class GetMethodsC m where
 
 class SaveMethodsC m where
     newSaveMethods :: [SaveMethod] -> m a
-    getSaveMethods :: m a -> [SaveMethod]
+    unSaveMethods :: m a -> [SaveMethod]
+
+    runSaveMethods :: FromConnEither n => m a -> [(PropertyName, SqlValue)] -> n [ID]
+    runSaveMethods ms vls = mapM (\m -> runSaveMethod m vls) $ unSaveMethods ms
 
     insertInto :: TableName -> [PropertyName] -> m a
     insertInto tb ls = newSaveMethods [M.insertInto tb ls]
@@ -32,9 +43,22 @@ class SaveMethodsC m where
     
 instance SaveMethodsC SaveMethods where
     newSaveMethods = SaveMethods
-    getSaveMethods (SaveMethods v) = v
+    unSaveMethods (SaveMethods v) = v
     
         
 instance GetMethodsC GetMethods where
     newGetMethods = GetMethods 
-    getGetMethods (GetMethods v) = v
+    unGetMethods (GetMethods v) = v
+
+class DelMethodsC m where
+    newDelMethods :: [DelMethod] -> m a
+    unDelMethods :: m a -> [DelMethod]
+    
+    runDelMethods :: FromConnEither n => m a -> n ()
+    runDelMethods mls = void $ mapM runDelMethod $ unDelMethods mls
+    
+    
+instance DelMethodsC DelMethods where
+    newDelMethods = DelMethods
+    unDelMethods (DelMethods v) = v
+    

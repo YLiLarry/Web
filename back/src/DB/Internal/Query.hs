@@ -20,18 +20,22 @@ data GetQuery = GetQuery {
     getQuery :: String
 } deriving (Show)
 
+data DelQuery = DelQuery {
+    delQuery :: String
+} deriving (Show)
+
 class SaveQueryC a where
     newSaveQuery :: String -> a
-    getSaveQuery :: a -> String
+    unSaveQuery :: a -> String
     
-    runSaveQuery :: a -> [SqlValue] -> ConnEither ID
+    runSaveQuery :: FromConnEither m => a -> [SqlValue] -> m ID
     runSaveQuery a sqlvals =
         let f conn = ExceptT $ handleSql (return . Left . seErrorMsg) $ do 
-                stmt <- prepare conn $ getSaveQuery a
+                stmt <- prepare conn $ unSaveQuery a
                 execute stmt sqlvals
                 commit conn
                 fmap (Right . fromSql . head . head) $ quickQuery conn "SELECT last_insert_rowid();" []
-        in ReaderT f
+        in fromConnEither $ ReaderT f
         
     insertInto :: TableName -> [ColumnName] -> a
     insertInto tb cols = newSaveQuery $ "INSERT INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (\_ -> "?") cols) ++ ")"
@@ -42,18 +46,18 @@ class SaveQueryC a where
     
 instance SaveQueryC SaveQuery where
     newSaveQuery = SaveQuery
-    getSaveQuery = saveQuery
+    unSaveQuery = saveQuery
     
 class GetQueryC a where
     newGetQuery :: String -> a
-    getGetQuery :: a -> String
+    unGetQuery :: a -> String
     
-    runGetQuery :: a -> [SqlValue] -> ConnEither [[SqlValue]]
+    runGetQuery :: FromConnEither m => a -> [SqlValue] -> m [[SqlValue]]
     runGetQuery a sqlVs =
         let f conn = ExceptT $ handleSql (return . Left . seErrorMsg) $ do 
-                r <- quickQuery conn (getGetQuery a) sqlVs
+                r <- quickQuery conn (unGetQuery a) sqlVs
                 return $ Right r
-        in ReaderT f
+        in fromConnEither $ ReaderT f
         
         
     selectID :: TableName -> [ColumnName] -> a
@@ -82,5 +86,25 @@ class GetQueryC a where
     
 instance GetQueryC GetQuery where
     newGetQuery = GetQuery
-    getGetQuery = getQuery
+    unGetQuery = getQuery
     
+class DelQueryC a where
+    newDelQuery :: String -> a
+    unDelQuery :: a -> String
+    
+    runDelQuery :: FromConnEither m => a -> [SqlValue] -> m ()
+    runDelQuery a sqlVs =
+        let f conn = ExceptT $ handleSql (return . Left . seErrorMsg) $ do 
+                r <- quickQuery conn (unDelQuery a) sqlVs
+                return $ Right ()
+        in fromConnEither $ ReaderT f
+    
+    deleteWhere :: WhereClause -> TableName -> a
+    deleteWhere clause tb = newDelQuery $ "DELETE FROM " ++ tb ++ " WHERE " ++ clause
+    
+    deleteID :: TableName -> a
+    deleteID = deleteWhere "id = ?"
+    
+instance DelQueryC DelQuery where
+    newDelQuery = DelQuery
+    unDelQuery (DelQuery v) = v
