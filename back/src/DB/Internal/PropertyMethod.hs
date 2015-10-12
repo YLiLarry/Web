@@ -14,8 +14,10 @@ class SaveMethodC m where
     newSaveMethod :: [PropertyName] -> SaveQuery -> m
     unSaveMethod :: m -> ([PropertyName], SaveQuery) 
     
-    runSaveMethod :: FromConnEither n => m -> [(PropertyName, SqlValue)] -> n ID
-    runSaveMethod ms sqlVs = runSaveQuery saveQ [ fromJust $ lookup prop sqlVs | prop <- props ]
+    runSaveMethod :: FromConnEither n => m -> [(PropertyName, SqlValue)] -> n [(PropertyName, ID)]
+    runSaveMethod ms sqlVs = do
+        id <- runSaveQuery saveQ [ fromJust $ lookup prop sqlVs | prop <- props ]
+        return $ map (\p -> (p, id)) props
         where
             (props, saveQ) = unSaveMethod ms
 

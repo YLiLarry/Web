@@ -15,7 +15,7 @@ import DB.Internal.Class
 import DB.Internal.Query as Query
 import Data.Aeson as A (ToJSON(..), Result(..), Value(..), FromJSON(..), fromJSON, object, (.=), decode)
 import Data.Aeson.Encode (encodeToTextBuilder)
-import qualified Data.Map as M (Map(..), fromList, unionWith, lookup, delete)
+import qualified Data.Map as M (Map(..), fromList, unionWith, lookup, delete, toList)
 import qualified Data.HashMap.Strict as HM (map, toList)
 import Control.Monad (foldM)
 import Control.Monad.Trans (liftIO)
@@ -58,7 +58,10 @@ instance FromModel (M.Map PropertyName SqlValue) where
             
 instance FromModel (M.Map PropertyName Value) where
     fromValue = fromResult . fromJSON 
-    
+
+instance FromModel [(PropertyName, SqlValue)] where
+    fromValue = M.toList . fromValue
+
 instance ToModel [SqlValue] where
     toValue x = toJSON $ (map convert x :: [Value])
         
@@ -123,16 +126,7 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
             nonNull x y    = y
     
     save :: (SaveResult r, FromConnEither m) => a -> SaveMethods a -> m r
-    save obj ls = do
-        v <- return $ fromModel obj
-        xs <- mapM (f v) $ unSaveMethods ls
-        return $ fromList $ concat xs
-        where
-            f :: FromConnEither m => M.Map PropertyName SqlValue -> SaveMethod -> m [(PropertyName, ID)]
-            f al sm = do
-                let (properties, method) = unSaveMethod sm
-                id <- runSaveQuery method [ fromJust $ M.lookup x al | x <- properties ]
-                return [ (x, id) | x <- properties ]
+    save obj methods = fmap fromList $ runSaveMethods methods $ fromModel obj
 
     get :: (FromConnEither m) => GetMethods a -> m [a]
     get methods = do
@@ -192,7 +186,7 @@ instance {-# OVERLAPS #-} FromConnEitherT IO (ResultPaginationT IO) where
 -- instance {-# OVERLAPS #-} (FromResultPaginationT t m) => FromConnEitherT t m where
     -- fromConnEitherT x = fromResultPaginationT $ (fromConnEitherT x :: ResultPaginationT t m)
      
-class SaveResult a where
+class (Show a) => SaveResult a where
     fromList :: [(PropertyName, ID)] -> a
     
 instance SaveResult (M.Map PropertyName ID) where

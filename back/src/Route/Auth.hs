@@ -16,7 +16,7 @@ import Helper
 
 setUserCookies :: User -> ConnServer ()
 setUserCookies usr = do
-    addCookie Session $ mkCookie "uid" $ show $ fromJust $ U.idx $ usr
+    addCookie Session $ mkCookie "uid" $ show $ fromJust $ U.idx usr
     addCookie Session $ mkCookie "token" $ fromJust $ U.token $ fromJust $ U.auth usr
 
 expireUserCookies :: ConnServer ()
@@ -37,7 +37,7 @@ guardLogin :: Connection -> ServerPart User
 guardLogin conn = do
     uid <- readCookieValue "uid"
     eitherUser <- runConnServerT (U.getUserByID uid) conn
-    case fst $ eitherUser of
+    case fst eitherUser of
         Left msg -> mzero
         Right vl -> return vl
 
@@ -61,5 +61,5 @@ register = do
 logout :: ConnServer Bool
 logout = do
     expireUserCookies
-    return $ True
+    return True
     

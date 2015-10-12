@@ -40,7 +40,7 @@ newToken :: String -> IO Token
 newToken salt = do
     rnd <- randomIO 
     let token = toHex $ hash $ BS.pack $ salt ++ show (rnd :: Double)
-    return $ token
+    return token
 
 loginByEmail :: FromConnEither m => Email -> Password -> m User
 loginByEmail email pwd = fromConnEither $ do

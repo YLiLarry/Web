@@ -10,6 +10,7 @@ import DB.Internal as DB
 import GHC.Generics
 import DB.Internal.PropertyMethodMap as PM
 import Data.Typeable
+import Helper (_p)
     
 type Name     = String
 type Email    = String
