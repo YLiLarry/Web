@@ -5,6 +5,7 @@ import Database.HDBC
 import DB.Internal.Query as Q
 import DB.Internal.Class
 import Data.Maybe (fromJust)
+import Helper (_p)
 
 type PropertyName = String
 
@@ -32,7 +33,7 @@ class GetMethodC m where
     runGetMethod :: FromConnEither n => m -> n [[(PropertyName, SqlValue)]]
     runGetMethod ms = do
         result <- runGetQuery query sqlVs
-        return $ [ zip props r | r <- result ]
+        return [ zip props r | r <- result ]
         where
             (props, query, sqlVs) = unGetMethod ms
 

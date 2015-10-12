@@ -90,8 +90,10 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
     
     decroGet :: (FromConnEither m) => GetMethods a -> a -> m a
     decroGet b o = do
-        e <- getOne b
-        return $ extend o e
+        e <- get b
+        return $ case e of
+            [] -> o
+            vl -> extend o $ head vl
         
     decroGetS :: (FromConnEither m) => [a -> GetMethods a] -> a -> m a
     decroGetS fs o = foldM (\acc f -> decroGet (f acc) acc) o fs
@@ -133,37 +135,15 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
                 return [ (x, id) | x <- properties ]
 
     get :: (FromConnEither m) => GetMethods a -> m [a]
-    get ls = do 
-        allAL <- foldM f (Right $ repeat []) $ unGetMethods ls
-        case allAL of 
-            Left  ls -> return $ map toModel ls
-            Right ls -> return $ map toModel ls
-        
-        where
-            f :: FromConnEither m => Either [[SqlValue]] [[(PropertyName, SqlValue)]] -> GetMethod -> m (Either [[SqlValue]] [[(PropertyName, SqlValue)]])
-            f (Right acc) gm = do
-                let (properties, method, sqlVs) = unGetMethod gm
-                vals <- runGetQuery method sqlVs
-                if null properties then return $ Left $ zipWith (++) (dropFirstField acc) vals 
-                else 
-                    case vals of
-                        []   -> return $ Right $  acc
-                        vals -> return $ Right $ zipWith (++) acc [ zip properties x | x <- vals ]
-            f (Left acc) gm = do
-                let (_, method, sqlVs) = unGetMethod gm
-                vals <- runGetQuery method sqlVs
-                case vals of
-                    []   -> return $ Left $ acc
-                    vals -> return $ Left $ zipWith (++) acc vals
-                
-            dropFirstField :: [[(PropertyName, SqlValue)]] -> [[SqlValue]]
-            dropFirstField = (map.map) snd
+    get methods = do
+        objLs <- runGetMethods methods
+        return $ map toModel objLs
                 
     getOne :: (FromConnEither m) => GetMethods a -> m a
     getOne m = fromConnEither $ do
         objs <- get m
         case objs of 
-            [] -> throwError $ "No result found. " ++ show m
+            [] -> throwError $ "getOne: No result found. " ++ show m
             v  -> return $ head objs
     
     getP :: FromResultPagination m => TableName -> Pagination -> GetMethods a -> m [a]

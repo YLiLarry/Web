@@ -8,6 +8,7 @@ import DB.Internal.Class
 import Database.HDBC (SqlValue)
 import Control.Monad (void)
 import Data.List (transpose)
+import Helper (_p)
 
 newtype GetMethods a = GetMethods [GetMethod] deriving (Show)
 newtype SaveMethods a = SaveMethods [SaveMethod] deriving (Show)
