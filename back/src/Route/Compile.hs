@@ -10,7 +10,7 @@ import Control.Monad (forM_, msum)
 --import Control.Exception (catch)
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing, getDirectoryContents)
 import System.Exit (ExitCode(..))
-import DB (IConnection, ID)
+import DB (IConnection, ID, (#))
 import qualified DB.Problem as P
 import qualified DB.User as U
 import System.FilePath (replaceExtension)
@@ -18,7 +18,6 @@ import Data.Text.Lazy as T (Text, pack, unpack)
 import Data.Text.Lazy.IO as T (readFile, writeFile)
 import Data.List (isSuffixOf)
 import Route.Internal
-import Data.Maybe (fromJust)
 
 import Helper
 
@@ -36,19 +35,18 @@ checkAnswer usr = do
     wd <- liftIO getCurrentDirectory
     let binPath = wd ++ "/bin/" ++ language ++ "/"
     let problemPath = wd ++ "/bin/plain/q" ++ pid ++ "/"
-    let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show (fromJust $ U.idx usr) ++ "/"
+    let compilePath = wd ++ "/tmp/q" ++ pid ++ "/user" ++ show (usr # U.idx) ++ "/"
     
-    result <- liftIO $ fmap msum $ sequence [
+    result <- liftIO $ msum <$> sequence [
               compile pid filePath binPath problemPath compilePath
             , runForEachInput problemPath compilePath
         ]
         
     case result of
         Nothing  -> do
-            P.saveUserSolution $ P.UserSolution (fromJust $ U.idx usr) (read pid) -- user solved solution
-            return $ "Correct" 
-        Just err -> do
-            throwError err
+            P.saveUserSolution $ P.UserSolution (usr # U.idx) (read pid) -- user solved solution
+            return "Correct" 
+        Just err -> throwError err
         
 
 -- | Calls the "compile" binary under the language directory with the user code path, compilation path, and the problem id
@@ -60,8 +58,8 @@ compile pid filePath binPath problemPath compilePath = do
         (proc (binPath ++ "compile") 
             [filePath,compilePath,pid]) { cwd = Just binPath }
         ""
-    if (exitCode == ExitSuccess) 
-    then return $ Nothing
+    if exitCode == ExitSuccess 
+    then return Nothing
     else return $ Just $ "Error message: \n" ++ dropFirstLine error
     where
         dropFirstLine = unlines.drop 2.lines
@@ -75,14 +73,14 @@ run compilePath input = do
     case exitCode of
         ExitSuccess      -> return $ Right $ T.pack out
         ExitFailure (-9) -> return $ Left    "Program times out."
-        otherwise        -> return $ Left  $ error
+        otherwise        -> return $ Left error
 
 -- | Runs the "main" binary in the compilation path with each input in the problem path, 
 --   and check the output against the expecation.
 runForEachInput :: DirectoryPath -> DirectoryPath -> IO (Maybe Error)
 runForEachInput problemPath compilePath = do
     pairs <- inOutFiles problemPath
-    fmap msum $ mapM runCompare pairs
+    msum <$> mapM runCompare pairs
     where
         runCompare :: (FilePath, FilePath) -> IO (Maybe Error)
         runCompare (inf,expectf) = do
@@ -91,13 +89,13 @@ runForEachInput problemPath compilePath = do
             actual <- run compilePath input
             return $ case actual of
                 Left error -> Just error
-                Right out -> if (expect == out) then Nothing else Just $ T.unpack input
+                Right out -> if expect == out then Nothing else Just $ T.unpack input
 
 -- | Gets a list of (input, output) files under the path
 inOutFiles :: DirectoryPath -> IO [(FilePath, FilePath)]
 inOutFiles path = do
     inputs <- searchFileExt path ".in"
-    let outputs = map (flip replaceExtension ".out") inputs
+    let outputs = map (`replaceExtension` ".out") inputs
     return $ zip inputs outputs
     
 searchFileExt :: String -> DirectoryPath -> IO [FilePath]

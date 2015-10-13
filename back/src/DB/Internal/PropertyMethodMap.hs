@@ -34,7 +34,7 @@ class SaveMethodsC m where
     unSaveMethods :: m a -> [SaveMethod]
 
     runSaveMethods :: FromConnEither n => m a -> [(PropertyName, SqlValue)] -> n [(PropertyName, ID)]
-    runSaveMethods ms vls = fmap concat $ mapM (\x -> runSaveMethod x vls) $ unSaveMethods ms
+    runSaveMethods ms vls = fmap concat $ mapM (`runSaveMethod` vls) $ unSaveMethods ms
 
     insertInto :: TableName -> [PropertyName] -> m a
     insertInto tb ls = newSaveMethods [M.insertInto tb ls]

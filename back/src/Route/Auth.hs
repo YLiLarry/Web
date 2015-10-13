@@ -16,8 +16,8 @@ import Helper
 
 setUserCookies :: User -> ConnServer ()
 setUserCookies usr = do
-    addCookie Session $ mkCookie "uid" $ show $ fromJust $ U.idx usr
-    addCookie Session $ mkCookie "token" $ fromJust $ U.token $ fromJust $ U.auth usr
+    addCookie Session $ mkCookie "uid" $ show $ usr # U.idx
+    addCookie Session $ mkCookie "token" $ usr # U.auth # U.token
 
 expireUserCookies :: ConnServer ()
 expireUserCookies = do
@@ -55,8 +55,9 @@ register = do
             , U.auth     = Nothing
         }
     usr <- newUser usr
+    usr <- loginByID (usr # idx) pwd
     setUserCookies usr
-    loginByID (fromJust $ idx usr) pwd
+    return usr 
     
 logout :: ConnServer Bool
 logout = do

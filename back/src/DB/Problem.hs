@@ -73,8 +73,8 @@ setSolvedByUser usr prb = newGetMethods
 
 setPrevNextID :: Problem -> GetMethods Problem
 setPrevNextID p = newGetMethods 
-        [     M.nextID (fromJust $ idx p) "Problem" ["next"] 
-            , M.prevID (fromJust $ idx p) "Problem" ["prev"] 
+        [     M.nextID (p # idx) "Problem" ["next"] 
+            , M.prevID (p # idx) "Problem" ["prev"] 
         ]
 
 saveUserSolution :: (FromConnEither m) => UserSolution -> m ID

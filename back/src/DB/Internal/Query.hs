@@ -34,14 +34,14 @@ class SaveQueryC a where
                 stmt <- prepare conn $ unSaveQuery a
                 execute stmt sqlvals
                 commit conn
-                fmap (Right . fromSql . head . head) $ quickQuery conn "SELECT last_insert_rowid();" []
+                (Right . fromSql . head . head) <$> quickQuery conn "SELECT last_insert_rowid();" []
         in fromConnEither $ ReaderT f
         
     insertInto :: TableName -> [ColumnName] -> a
-    insertInto tb cols = newSaveQuery $ "INSERT INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (\_ -> "?") cols) ++ ")"
+    insertInto tb cols = newSaveQuery $ "INSERT INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (const "?") cols) ++ ")"
     
     replaceInto :: TableName -> [ColumnName] -> a
-    replaceInto tb cols = newSaveQuery $ "REPLACE INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (\_ -> "?") cols) ++ ")"
+    replaceInto tb cols = newSaveQuery $ "REPLACE INTO " ++ tb ++ " (" ++ intercalate "," cols ++ ") VALUES (" ++ intercalate "," (map (const "?") cols) ++ ")"
     
     
 instance SaveQueryC SaveQuery where
@@ -78,10 +78,10 @@ class GetQueryC a where
     selectP :: Pagination -> TableName -> [ColumnName] -> a
     selectP pag = select $ "LIMIT " ++ offset ++ ", " ++ top
         where
-            curr   = fromJust $ current pag
-            per    = fromJust $ perPage pag
+            curr   = pag # current
+            per    = pag # perPage
             offset = show $ (curr - 1) * per
-            top    = show $ per
+            top    = show per
         
     
 instance GetQueryC GetQuery where

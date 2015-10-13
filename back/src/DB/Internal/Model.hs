@@ -1,13 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE DeriveGeneric #-}
+-- {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+-- {-# LANGUAGE StandaloneDeriving #-}
+-- {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module DB.Internal.Model where
     
@@ -38,6 +38,7 @@ import DB.Internal.Typecast
 import Data.Monoid (Monoid (..))
 import Control.Monad.Trans.Elevator (mapElevate)
 import Data.ByteString.Lazy.Char8 as BS (pack)
+import Control.Arrow (first)
 
 fromResult :: Result a -> a
 fromResult (Success a) = a
@@ -52,7 +53,7 @@ class FromModel a where
 instance FromModel (M.Map PropertyName SqlValue) where
     fromValue (Object hmap) = 
         M.fromList $ 
-        map (\(k, v) -> (T.unpack k, v)) $
+        map (first T.unpack) $
         HM.toList $ 
         HM.map convert hmap
             
@@ -63,7 +64,7 @@ instance FromModel [(PropertyName, SqlValue)] where
     fromValue = M.toList . fromValue
 
 instance ToModel [SqlValue] where
-    toValue x = toJSON $ (map convert x :: [Value])
+    toValue x = toJSON (map convert x :: [Value])
         
 -- instance FromModel String where
     -- fromValue = TL.unpack . TL.toLazyText . encodeToTextBuilder
@@ -81,7 +82,7 @@ class ToModel a where
     toModel = fromResult . fromJSON . toValue
     
 instance ToModel [(PropertyName, SqlValue)] where
-    toValue al = object $ [ (T.pack x) .= toJSON (convert y :: Value) | (x,y) <- al ]
+    toValue al = object [ T.pack x .= toJSON (convert y :: Value) | (x,y) <- al ]
     
 instance ToModel (M.Map PropertyName Value) where
     toValue = toJSON
@@ -114,11 +115,11 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
     decroMapGet :: (FromConnEither m) => (a -> GetMethods a) -> [a] -> m [a]
     decroMapGet f = mapM (\x -> decroGet (f x) x)
     
-    decroMapGetS :: (FromConnEither m) => [(a -> GetMethods a)] -> [a] -> m [a]
+    decroMapGetS :: (FromConnEither m) => [a -> GetMethods a] -> [a] -> m [a]
     decroMapGetS fs os = sequence [ decroGetS fs o | o <- os ]
     
     extend :: a -> a -> a
-    extend a b = toModel $ (u :: M.Map PropertyName Value)
+    extend a b = toModel (u :: M.Map PropertyName Value)
         where
             u = M.unionWith nonNull (fromModel a) (fromModel b) 
             nonNull x Null = x
@@ -157,8 +158,7 @@ class (FromJSON a, ToJSON a, Show a, Typeable a) => Model a where
     --         f (propNames, delQuery, sqlVs) = do
     --             runDelQuery delQuery sqlVs
     --             return propNames
-        
-                
+
 
 data Meta a = NoMeta | Meta a deriving (Show, Functor)
 
@@ -230,10 +230,10 @@ class (Monad m) => ResultPaginationC m where
     mapR = flip forR
         
     extR :: (Model a) => m [a] -> a -> m [a]
-    extR x y = forR x (\a -> extend a y)
+    extR x y = forR x (`extend` y)
     
     extP :: m [a] -> Meta Pagination -> m [a]
-    extP x y = forP x (\a -> mappend a y)
+    extP x y = forP x (`mappend` y)
     
     --forRM :: (Monad n) => m [a] -> (a -> n b) -> n (m [b])
     --forRM a f = return $ do
@@ -260,8 +260,8 @@ class (Monad m) => ResultPaginationC m where
 instance (Model x) => Monoid (Meta x) where
     mempty = NoMeta
     mappend (Meta x) (Meta y) = Meta $ extend x y
-    mappend (Meta x) NoMeta   = Meta $ x
-    mappend NoMeta   (Meta y) = Meta $ y
+    mappend (Meta x) NoMeta   = Meta x
+    mappend NoMeta   (Meta y) = Meta y
     mappend NoMeta   NoMeta   = NoMeta
 
 instance ToJSON a => ToJSON (Meta a) where

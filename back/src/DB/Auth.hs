@@ -29,7 +29,7 @@ defaultSaveAuth = PM.replaceInto "Auth" ["userID", "token"]
 newUserAuth :: FromConnEither m => User -> m User
 newUserAuth usr = fromConnEither $ do
     let i = idx usr
-    let e = fromJust $ email usr
+    let e = usr # email
     t <- liftIO $ newToken e 
     let a = Auth { userID = i, token = Just t } 
     save a defaultSaveAuth :: ConnEither ID
@@ -54,7 +54,7 @@ loginByID uid pwd = fromConnEither $ do
     
 loginByUser :: FromConnEither m => User -> Password -> m User
 loginByUser usr pwd = fromConnEither $ do
-    let pwd' = fromJust $ password usr
+    let pwd' = usr # password
     if pwd /= pwd' then throwError "Wrong password." else newUserAuth usr
     
 -- logoutUser :: FromConnEither m => User -> m Bool

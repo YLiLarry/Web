@@ -4,9 +4,9 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+-- {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE StandaloneDeriving #-}
+-- {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -24,6 +24,7 @@ import Database.HDBC.Sqlite3 (Connection, connectSqlite3)
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans.Elevator
+import Data.Maybe (fromMaybe)
 
 type TableName = String
 type ColumnName = String
@@ -78,4 +79,10 @@ dbLocation = "../db.sqlite"
 connectDB :: IO Connection
 connectDB = connectSqlite3 dbLocation
 
+getProperty :: Show a => (a -> Maybe b) -> a -> b
+getProperty selector a = fromMaybe 
+    (error $ "Attempt to read property of Nothing in " ++ show a)
+    (selector a)
 
+(#) :: Show a => a -> (a -> Maybe b) -> b
+a # selector = getProperty selector a
