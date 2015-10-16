@@ -20,11 +20,11 @@ main = do
     simpleHTTP nullConf $ do
         decodeBody $ defaultBodyPolicy "/tmp/" 1024 1024 1024
         handleInternalError $ msum [
-                dirs "api/v1" $ msum $ [
+                dirs "api/v1" $ msum [
                           dir "login" $ withConn loginResponse
                         , protectedRoutes conn
                         , dir "register" $ withConn register
-                        , dir "problems" $ path (\pid -> withConn $ problem $ read pid)
+                        , dir "problems" $ path (withConn . problem . read)
                         , dir "problems" $ withConn problems
                         , badRequest $ toResponse "Your request is illegal."
                     ]
@@ -69,6 +69,6 @@ handleInternalError :: ServerPart Response -> ServerPart Response
 handleInternalError = mapServerPartT (handle f)
     where
         f :: SomeException -> UnWebT IO Response
-        f e = return $ Just $
+        f e = return $ Just
             (Left $ toResponse $ show e, filterFun (\x -> x {rsCode = 500}))
             

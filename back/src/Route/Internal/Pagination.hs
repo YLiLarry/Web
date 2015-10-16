@@ -14,4 +14,4 @@ getPagination :: ConnServer Pagination
 getPagination = do
     c <- lookRead "current"
     p <- lookRead "perpage"
-    return $ Pagination { current = Just c, perPage = Just p, total = Nothing }
+    return Pagination { current = Just c, perPage = Just p, total = Nothing }

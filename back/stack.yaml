@@ -2,6 +2,7 @@ flags:
   text:
     integer-simple: false
 packages:
+- ../../Transformer-Elevator
 - '.'
 extra-deps:
 - HDBC-2.4.0.1
